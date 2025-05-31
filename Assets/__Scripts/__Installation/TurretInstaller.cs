@@ -1,3 +1,4 @@
+using Course.Attribute;
 using Course.Attribute.Bullet;
 using Course.Control;
 using Course.Control.Turret;
@@ -27,6 +28,12 @@ namespace Course.Installation
         private BulletFactory _bulletFactory;
         private BulletPool _bulletPool;
         private Transform _anchor;
+        private IHealthBehaviour _healthBehaviour;
+
+        public void Initialize(IHealthBehaviour healthBehaviour)
+        {
+            _healthBehaviour = healthBehaviour;
+        }
         
         public void AwakeInitialize() 
         {
@@ -39,11 +46,14 @@ namespace Course.Installation
             _bulletPool = new BulletPool(bulletPrefab, _anchor);
             _bulletFactory = new BulletFactory(_bulletPool);
             _shooter = new Shooter(_bulletFactory);
-            turretBehaviour.Initialize(inputReader,
-                _rotator,
-                _shooter,
-                turretTransform,
-                bulletSpawnPoint);
+            new TurretBehaviour.TurretBuilder(turretBehaviour)
+                .WithInputReader(inputReader)
+                .WithRotator(_rotator)
+                .WithShooter(_shooter)
+                .WithJumpBehaviour(_healthBehaviour)
+                .WithSpawnTransform(bulletSpawnPoint)
+                .WithTurretTransform(turretTransform)
+                .Build();
         }
 
         private void Awake()

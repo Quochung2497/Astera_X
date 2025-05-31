@@ -338,6 +338,8 @@ GameObject:
   - component: {fileID: 54827132454177206}
   - component: {fileID: 2305430630981110134}
   - component: {fileID: 1739712068650679125}
+  - component: {fileID: 8148998507493297116}
+  - component: {fileID: 7921490642722347170}
   m_Layer: 8
   m_Name: PlayerShip
   m_TagString: Player
@@ -374,11 +376,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cb3a0984e933a34bb318022edcd2f77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 10
+  config: {fileID: 11400000, guid: 99949a6d85e4a4c4c8aebb00f36fccde, type: 2}
   inputReader: {fileID: 11400000, guid: 65d029c290d82b646b60d9bab52982f0, type: 2}
   playerController: {fileID: 2305430630981110134}
-  maxTiltAngle: 30
-  tiltSpeed: 5
+  healthBehaviour: {fileID: 7921490642722347170}
+  scoreBehaviour: {fileID: 8148998507493297116}
+  turretInstaller: {fileID: 1773070247549255539}
 --- !u!135 &135344746280246978
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -439,6 +442,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3643bbf608ffd044b3edd4a43517cab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  jumpDelay: 0.5
+  minAsteroidSeparation: 4
+  minPlayerSeparation: 5
 --- !u!114 &1739712068650679125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -449,6 +455,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 37e399ea0ca020e4ebe1934d6c6fc46f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8148998507493297116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1664251521892296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d90e7e1c4dbfc27499e49ee5f8968022, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7921490642722347170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1664251521892296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04c880e346de10748a930263ef16a99b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1957318569610646

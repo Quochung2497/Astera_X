@@ -15,13 +15,16 @@ GameObject:
   - component: {fileID: 54329969971019666}
   - component: {fileID: 2483563218318032333}
   - component: {fileID: 7682023282918535146}
+  - component: {fileID: -4468617988110624529}
+  - component: {fileID: -4178684408930676355}
+  - component: {fileID: 7253909922053023084}
   m_Layer: 10
   m_Name: Asteroid_A
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4031032316892020
 Transform:
   m_ObjectHideFlags: 0
@@ -163,5 +166,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef542e6eb0936b644a2f1b01a66a87af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 3
-  immune: 0
+--- !u!114 &-4468617988110624529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029653053436338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04c880e346de10748a930263ef16a99b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-4178684408930676355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029653053436338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9a7136eb092d57488964d99cedf52a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  particlesEffectContainer: {fileID: 11400000, guid: 1b5bebd889805e147a37883d6d8ff4af,
+    type: 2}
+  particlesEffectContainer: {fileID: 11400000, guid: 1b5bebd889805e147a37883d6d8ff4af,
+    type: 2}
+--- !u!114 &7253909922053023084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1029653053436338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 629bfe67cd044d02a5abce7703715a3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  asteroid: {fileID: 7682023282918535146}
+  offScreenWrapper: {fileID: 2483563218318032333}
+  healthBehaviour: {fileID: -4468617988110624529}
+  asteroidOnDeathEffect: {fileID: -4178684408930676355}

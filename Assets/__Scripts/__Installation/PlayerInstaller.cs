@@ -1,38 +1,52 @@
 using System;
+using Course.Attribute;
 using Course.Control;
 using Course.Control.Player;
 using Course.Core;
+using Course.ScriptableObject;
 using Course.Utility;
 using UnityEngine;
+using UnityEngine.Serialization;
+using UnityEngine.SocialPlatforms;
 
 namespace Course.Installation
 {
     public class PlayerInstaller : MonoBehaviour,IInstaller
     {
-        [Header("Movement")]
-        [SerializeField] float moveSpeed = 10f;
+        [Header("PlayerShip Config")] 
+        [SerializeField]
+        private PlayerShipConfig config;
         
         [Header("Input")]
         [SerializeField] InputReader inputReader;
         
-        [Header("Player")]
+        [Header("Player Components")]
         [SerializeField] 
-        PlayerMovementBehaviour playerController;
+        PlayerShipBehaviour playerController;
+        [FormerlySerializedAs("jumpBehaviour")] [SerializeField]
+        HealthBehaviour healthBehaviour;
+        [SerializeField]
+        ScoreBehaviour scoreBehaviour;
         
-        [Header("Tilt Settings")]
-        [Tooltip("Max bank angle (degrees) when strafing at full speed")]
-        [SerializeField] float maxTiltAngle = 30f;
-        [Tooltip("How quickly the ship tilts toward the target angle")]
-        [SerializeField] float tiltSpeed = 5f;
+        [Header("Turret Installer")]
+        [SerializeField]
+        TurretInstaller turretInstaller;
         
         // Cache
         private IMover _mover;
+        private IDamageable _damageable;
+        private IAttribute _score;
         private ITiltWithVelocity _tiltWithVelocity;
         private Rigidbody _rb;
 
         public void AwakeInitialize()
         {
             inputReader.Initialize();
+            _damageable = new Damageable((float)config.JumpCount);
+            healthBehaviour.Initialize(_damageable);
+            _score = new Score(config.Score);
+            scoreBehaviour.Initialize(_score);
+            turretInstaller.Initialize(healthBehaviour);
         }
 
         public void StartInitialize()
@@ -41,16 +55,17 @@ namespace Course.Installation
             _rb = GetComponent<Rigidbody>();
             _tiltWithVelocity = new TiltWithVelocity(
                 transform,
-                maxTiltAngle,
-                tiltSpeed,
-                moveSpeed
+                config.MaxTiltAngle,
+                config.TiltSpeed,
+                config.MoveSpeed
             );
-            new PlayerMovementBehaviour.PlayerBuilder(playerController)
+            new PlayerShipBehaviour.PlayerBuilder(playerController)
                 .WithMover(_mover)
                 .WithInputReader(inputReader)
-                .WithMoveSpeed(moveSpeed)
+                .WithMoveSpeed(config.MoveSpeed)
                 .WithRigidbody(_rb)
                 .WithTiltLogic(_tiltWithVelocity)
+                .WithJumpBehaviour(healthBehaviour)
                 .Build();
         }
         

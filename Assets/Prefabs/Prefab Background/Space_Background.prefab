@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5319284475475899846}
   - component: {fileID: 8721698638195204510}
-  - component: {fileID: 7610319088192099219}
+  - component: {fileID: 1885195564987598007}
   m_Layer: 0
   m_Name: Space_Background
   m_TagString: Untagged
@@ -88,7 +88,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &7610319088192099219
+--- !u!114 &1885195564987598007
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -97,7 +97,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 8540961476015724925}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14df00ade90d0450c8b2a684dc1287ae, type: 3}
+  m_Script: {fileID: 11500000, guid: f27f1754e19b76b42898d34727940e9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camToMatch: {fileID: 0}

@@ -7,26 +7,59 @@ namespace Course.Control.Asteroid
 {
     public class AsteroidBehaviour : IAsteroidBehaviour
     {
+        #region Private Fields
+
+        /// <summary>
+        /// Reference to the AsteraX manager, used for accessing asteroid-related settings and operations.
+        /// </summary>
         private readonly IAsteraX _manager;
+
+        /// <summary>
+        /// Callback action for setting up an asteroid's attributes.
+        /// </summary>
         readonly Action<Attribute.Asteroid> _setup;
+
+        /// <summary>
+        /// Function to check if a given position is out of bounds.
+        /// </summary>
         readonly Func<Vector3, bool> _isOutOfBounds;
-        readonly Action<Attribute.Asteroid>             _releaseCallback;
-        readonly Action<Attribute.Asteroid, Collision>  _onHitCallback;
-        
+
+        /// <summary>
+        /// Callback action for handling asteroid collision events.
+        /// </summary>
+        readonly Action<Attribute.Asteroid, Collision> _onHitCallback;
+
+        #endregion
+
+        #region Public Methods
+
+          /// <summary>
+        /// Initializes a new instance of the <see cref="AsteroidBehaviour"/> class.
+        /// Sets up the manager, setup callback, out-of-bounds checker, collision callback, and release callback.
+        /// </summary>
+        /// <param name="manager">The AsteraX manager instance.</param>
+        /// <param name="setupCallback">Callback for setting up asteroid attributes.</param>
+        /// <param name="isOutOfBoundsChecker">Function to check if a position is out of bounds.</param>
+        /// <param name="onHitCallback">Callback for handling asteroid collision events.</param>
         public AsteroidBehaviour(IAsteraX manager,
             Action<Attribute.Asteroid> setupCallback,
             Func<Vector3,bool> isOutOfBoundsChecker,
-            Action<Attribute.Asteroid, Collision>  onHitCallback,
-            Action<Attribute.Asteroid>             releaseCallback
+            Action<Attribute.Asteroid, Collision>  onHitCallback
             )
         {
             _manager = manager;
             _setup = setupCallback;
             _isOutOfBounds   = isOutOfBoundsChecker;
-            _releaseCallback = releaseCallback;
             _onHitCallback   = onHitCallback;
         }
         
+        /// <summary>
+        /// Recursively spawns child asteroids based on the specified size level.
+        /// Delegates the setup logic to the provided setup callback.
+        /// </summary>
+        /// <param name="sizeLevel">The size level of the child asteroids to spawn.</param>
+        /// <param name="parentTransform">The transform of the parent asteroid.</param>
+        /// <param name="parentName">The name of the parent asteroid.</param>
         public void SpawnChildren(int sizeLevel,Transform parentTransform, string parentName)
         {
             if (sizeLevel <= 1)
@@ -49,6 +82,13 @@ namespace Course.Control.Asteroid
             }
         }
 
+        /// <summary>
+        /// Calculates the initial velocity of an asteroid based on its position and size.
+        /// Determines the linear and angular velocity using random values and asteroid settings.
+        /// </summary>
+        /// <param name="currentPosition">The current position of the asteroid.</param>
+        /// <param name="size">The size of the asteroid.</param>
+        /// <returns>A <see cref="VelocityInfo"/> struct containing the linear and angular velocity.</returns>
         public VelocityInfo CalculateInitialVelocity(Vector3 currentPosition, int size)
         {
             Vector3 vel;
@@ -79,6 +119,13 @@ namespace Course.Control.Asteroid
             };
         }
 
+        /// <summary>
+        /// Handles the logic when an asteroid is hit.
+        /// If the asteroid has children, reinitializes them and detaches them from the parent.
+        /// Delegates the release logic to the provided release callback.
+        /// </summary>
+        /// <param name="self">The asteroid that was hit.</param>
+        /// <param name="collision">The collision data.</param>
         public void OnHit(Attribute.Asteroid self, Collision collision)
         {
             if (self.size > 1)
@@ -93,14 +140,25 @@ namespace Course.Control.Asteroid
                     child.InitAsteroid();    
                 }
             }
-
-            _releaseCallback(self);
         }
+
+        #endregion
+      
     }
     
+    /// <summary>
+    /// Represents the velocity information of an asteroid, including linear and angular velocity.
+    /// </summary>
     public struct VelocityInfo
     {
+        /// <summary>
+        /// The linear velocity of the asteroid.
+        /// </summary>
         public Vector3 Linear;
+        
+        /// <summary>
+        /// The angular velocity of the asteroid.
+        /// </summary>
         public Vector3 Angular;
     }
 }
