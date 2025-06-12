@@ -13,26 +13,6 @@ namespace Course.Control.Player
     [RequireComponent(typeof(Rigidbody))]
   public class PlayerShipBehaviour : MonoBehaviour
   {
-
-      #region Serialize Fields
-
-      /// <summary>
-      /// The delay time before the player ship reappears after jumping.
-      /// </summary>
-      [SerializeField] float jumpDelay = 1f;
-
-      /// <summary>
-      /// The minimum separation distance from asteroids when determining a safe spawn position.
-      /// </summary>
-      [SerializeField] float minAsteroidSeparation = 3f;
-
-      /// <summary>
-      /// The minimum separation distance from the player when determining a safe spawn position.
-      /// </summary>
-      [SerializeField] float minPlayerSeparation = 5f;
-
-      #endregion
-
       #region Private Properties
 
       /// <summary>
@@ -61,26 +41,6 @@ namespace Course.Control.Player
       private ITiltWithVelocity _tiltWithVelocity;
 
       /// <summary>
-      /// Reference to the jump behavior component for handling jump-related actions.
-      /// </summary>
-      private IHealthBehaviour _healthBehaviour;
-
-      /// <summary>
-      /// Reference to the AsteraX manager for accessing game-related settings and operations.
-      /// </summary>
-      private IAsteraX _asteraX;
-
-      /// <summary>
-      /// Array of renderers used to control the visibility of the player ship.
-      /// </summary>
-      private Renderer[] _renderers;
-
-      /// <summary>
-      /// Reference to the collider component of the player ship.
-      /// </summary>
-      private Collider _collider;
-
-      /// <summary>
       /// Reference to the rigidbody component of the player ship.
       /// </summary>
       private Rigidbody _rb;
@@ -89,26 +49,22 @@ namespace Course.Control.Player
       /// The movement speed of the player ship.
       /// </summary>
       private float _moveSpeed;
-
+      
+      /// <summary>
+      ///
+      /// </summary>
+      private bool _isJumping = false;
+      
       /// <summary>
       /// Indicates whether the player ship has been initialized.
       /// </summary>
       private bool _isInitialized = false;
-
+      
       /// <summary>
-      /// Event raised when the game state changes to "Game Over".
+      /// Reference to the jump behaviour component for managing player jump.
       /// </summary>
-      private GameStateChangedEvent _gameStateGameOvervent;
-
-      /// <summary>
-      /// The amount of damage taken by the player ship when colliding with an asteroid.
-      /// </summary>
-      private int _damage;
-
-      /// <summary>
-      /// Flag indicating whether the player ship is immune to hits.
-      /// </summary>
-      private bool _hitImmune = false;
+      private IJumpBehaviour _jumpBehaviour;
+      
       #endregion
 
       #region Private Methods
@@ -121,7 +77,7 @@ namespace Course.Control.Player
       /// <param name="moveSpeed">The movement speed of the player ship.</param>
       /// <param name="rb">The rigidbody component of the player ship.</param>
       /// <param name="tiltWithVelocity">The tilt logic component for tilting the ship.</param>
-      private void Initialize(IMover mover, InputReader inputReader, float moveSpeed, Rigidbody rb, ITiltWithVelocity tiltWithVelocity, IHealthBehaviour healthBehaviour)
+      private void Initialize(IMover mover, InputReader inputReader, float moveSpeed, Rigidbody rb, ITiltWithVelocity tiltWithVelocity, IJumpBehaviour jumpBehaviour)
       {
           _mover = mover;
           _inputReader = inputReader;
@@ -130,14 +86,10 @@ namespace Course.Control.Player
           _tiltWithVelocity = tiltWithVelocity;
           _inputReader.OnMoveEvent += OnMove;
       
-          _healthBehaviour = healthBehaviour;
-          _asteraX = AsteraXManager.TryGetInstance();
-          _renderers = GetComponentsInChildren<Renderer>();
-          _collider = GetComponent<Collider>();
-          _gameStateGameOvervent = new GameStateChangedEvent(GameState.gameOver);
+          _jumpBehaviour = jumpBehaviour;
       
-          _healthBehaviour.OnDie += OnDie;
-          _healthBehaviour.OnValueChanged += OnHealth;
+          _jumpBehaviour.OnDisappear += OnDisappear;
+          _jumpBehaviour.OnReappear += OnReappear;
           _isInitialized = true;
       }
       
@@ -166,52 +118,22 @@ namespace Course.Control.Player
       /// <summary>
       /// Handles the jump action when triggered by the jump behavior.
       /// </summary>
-      private void OnHealth()
+      private void OnDisappear()
       {
-          if (_healthBehaviour.IsDead)
+          if (_isJumping)
               return;
-          StartCoroutine(Jump());
+          _isJumping = true;
+          _mover.Stop();
       }
       
-      /// <summary>
-      /// Executes the jump action, including disappearing, waiting, teleporting, and reappearing.
-      /// </summary>
-      private IEnumerator Jump()
-      {
-          // disappear
-          SetVisible(false);
-      
-          // wait
-          yield return new WaitForSeconds(jumpDelay);
-      
-          // teleport to safe spot
-          var safe = _asteraX.GetSafeSpawnPosition(minPlayerSeparation, minAsteroidSeparation, 20);
-          transform.position = safe;
-            
-          // reappear
-          SetVisible(true);
-          _hitImmune = false;  
-      }
-      
-      /// <summary>
-      /// Sets the visibility of the player ship.
-      /// </summary>
-      /// <param name="v">True to make the ship visible; false to hide it.</param>
-      private void SetVisible(bool v)
-      {
-          foreach (var r in _renderers) r.enabled = v;
-          _collider.enabled = v;
-      }
       
       /// <summary>
       /// Handles the logic when the player ship dies.
       /// Stops movement, hides the ship, and raises the "Game Over" event.
       /// </summary>
-      private void OnDie()
+      private void OnReappear()
       {
-          _mover.Stop();
-          SetVisible(false);
-          EventBus<GameStateChangedEvent>.Raise(_gameStateGameOvervent);
+          _isJumping = false;
       }
       #endregion
 
@@ -226,7 +148,8 @@ namespace Course.Control.Player
           if (!_isInitialized)
               return;
           _inputReader.OnMoveEvent += OnMove;
-          _healthBehaviour.OnDie += OnDie;
+          _jumpBehaviour.OnReappear += OnReappear;
+          _jumpBehaviour.OnDisappear += OnDisappear;
       }
 
       /// <summary>
@@ -238,7 +161,8 @@ namespace Course.Control.Player
           if (!_isInitialized)
               return;
           _inputReader.OnMoveEvent -= OnMove;
-          _healthBehaviour.OnDie -= OnDie;
+          _jumpBehaviour.OnReappear -= OnReappear;
+          _jumpBehaviour.OnDisappear -= OnDisappear;
       }
 
       /// <summary>
@@ -247,29 +171,10 @@ namespace Course.Control.Player
       /// </summary>
       private void FixedUpdate()
       {
-          if (!_isInitialized || _healthBehaviour.IsDead)
+          if (!_isInitialized || _isJumping)
               return;
           HandleMovement();
       }
-
-      /// <summary>
-      /// Unity's OnCollisionEnter method, called when the player ship collides with another object.
-      /// Handles collision logic, including reducing jump behavior value if colliding with an asteroid.
-      /// </summary>
-      /// <param name="other">The collision data.</param>
-      private void OnCollisionEnter(Collision other)
-      {
-          if (!_isInitialized || _healthBehaviour.IsDead)
-              return;
-
-          if (other.gameObject.layer == LayerNameProvider.GetLayer(LayerName.Asteroid))
-          {
-              _hitImmune = true;  
-              _damage= _asteraX.asteroidsSO.damage;
-              _healthBehaviour?.ChangeValue(-_damage);
-          }
-      }
-
 
       #endregion
 
@@ -285,7 +190,7 @@ namespace Course.Control.Player
           private InputReader _inputReader;
           private float _moveSpeed;
           private ITiltWithVelocity _tilt;
-          private IHealthBehaviour _healthBehaviour;
+          private IJumpBehaviour _jumpBehaviour;
           private Rigidbody _rb;
 
           /// <summary>
@@ -357,9 +262,9 @@ namespace Course.Control.Player
           /// </summary>
           /// <param name="healthBehaviour"></param>
           /// <returns></returns>
-          public PlayerBuilder WithJumpBehaviour(IHealthBehaviour healthBehaviour)
+          public PlayerBuilder WithJumpBehaviour(IJumpBehaviour jumpBehaviour)
           {
-              _healthBehaviour = healthBehaviour;
+              _jumpBehaviour = jumpBehaviour;
               return this;
           }
           
@@ -380,7 +285,7 @@ namespace Course.Control.Player
                   _moveSpeed,
                   _rb,
                   _tilt,
-                  _healthBehaviour
+                  _jumpBehaviour
               );
           }
       }

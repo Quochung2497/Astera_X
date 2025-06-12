@@ -17,7 +17,7 @@ namespace Course.Control.Asteroid
         /// <summary>
         /// Callback action for setting up an asteroid's attributes.
         /// </summary>
-        readonly Action<Attribute.Asteroid> _setup;
+        private readonly Action<Course.Attribute.Asteroid,int> _setup;
 
         /// <summary>
         /// Function to check if a given position is out of bounds.
@@ -42,7 +42,7 @@ namespace Course.Control.Asteroid
         /// <param name="isOutOfBoundsChecker">Function to check if a position is out of bounds.</param>
         /// <param name="onHitCallback">Callback for handling asteroid collision events.</param>
         public AsteroidBehaviour(IAsteraX manager,
-            Action<Attribute.Asteroid> setupCallback,
+            Action<Course.Attribute.Asteroid,int> setupCallback,
             Func<Vector3,bool> isOutOfBoundsChecker,
             Action<Attribute.Asteroid, Collision>  onHitCallback
             )
@@ -53,32 +53,52 @@ namespace Course.Control.Asteroid
             _onHitCallback   = onHitCallback;
         }
         
-        /// <summary>
-        /// Recursively spawns child asteroids based on the specified size level.
-        /// Delegates the setup logic to the provided setup callback.
-        /// </summary>
-        /// <param name="sizeLevel">The size level of the child asteroids to spawn.</param>
-        /// <param name="parentTransform">The transform of the parent asteroid.</param>
-        /// <param name="parentName">The name of the parent asteroid.</param>
-        public void SpawnChildren(int sizeLevel,Transform parentTransform, string parentName)
+        public void SpawnDescendent(    
+            int childSize,
+            int childCount,
+            int childHealth,
+            int childPoints,
+            int childDamage,
+
+            int grandchildSize,
+            int grandchildCount,
+            int grandchildHealth,
+            int grandchildPoints,
+            int grandchildDamage,
+
+            Transform parentTransform,
+            string parentName)
         {
-            if (sizeLevel <= 1)
-                return;
+            if (childCount <= 0 || childSize <= 0) return;
 
-            var so = _manager.asteroidsSO;
-            for (int i = 0; i < so.numSmallerAsteroidsToSpawn; i++)
+            for (int i = 0; i < childCount; i++)
             {
-                var frag = _manager.GetRandomAsteroidFromPool();
-
+                var frag = _manager.GetRandomAsteroidFromPool(childSize);
                 frag.name = $"{parentName}_{i:00}";
                 frag.transform.SetParent(parentTransform, worldPositionStays: false);
-                frag.SetSize(sizeLevel - 1);
-                _setup(frag);
+                frag.SetPointValue(childPoints); 
+                frag.SetDamageValue(childDamage);
+                _setup(frag, childHealth);  // calls Setup()
+                _manager.AddAsteroid(frag);  // ensure manager knows about this new child
 
-                frag.transform.localPosition = Random.onUnitSphere / 2f;
+                frag.transform.localPosition = Random.onUnitSphere * 0.5f;
                 frag.transform.localRotation = Random.rotation;
 
-                SpawnChildren(sizeLevel - 1, frag.transform, frag.name);
+                // Now pass next generation’s sizes & counts:
+                SpawnDescendent(
+                    grandchildSize,
+                    grandchildCount,
+                    grandchildHealth,
+                    grandchildPoints,
+                    grandchildDamage,
+                      0,             
+                      0,
+                      0,
+                      0,
+                      0,
+                    frag.transform,
+                    frag.name
+                    );
             }
         }
 

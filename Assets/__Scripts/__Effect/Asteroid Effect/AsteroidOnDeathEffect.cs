@@ -1,6 +1,7 @@
 using Course.Attribute;
 using Course.Core;
 using UnityEngine;
+using Utility.DependencyInjection;
 
 namespace Course.Effect
 {
@@ -14,26 +15,26 @@ namespace Course.Effect
         {
             _asteroid ??= asteroid;
             base.Initialize(health);
-            _owner.OnDie += HandleOnDeath;
+            _owner.OnDie += HandleOnTriggerEffect;
             _initialized = true;
         }
 
         protected override void OnEnable()
         {
-            if(!_initialized || _owner == null)
+            if (!_initialized || _owner == null)
                 return;
-            _owner.OnDie += HandleOnDeath;
+            _owner.OnDie += HandleOnTriggerEffect;
         }
 
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
-            if(!_initialized || _owner == null)
+            if (!_initialized || _owner == null)
                 return;
-            _owner.OnDie -= HandleOnDeath;
+            _owner.OnDie -= HandleOnTriggerEffect;
         }
-        
-        protected override void HandleOnDeath()
+
+        protected override void HandleOnTriggerEffect()
         {
             if (particlesEffectContainer == null || _asteroid == null)
                 return;
@@ -44,7 +45,8 @@ namespace Course.Effect
 
         protected override float GetScaleFactor()
         {
-            return (float)_asteroid.size / AsteraXManager.TryGetInstance().asteroidsSO.initialSize; // Current size divide initial size eg: size 3 / 3 = 1, size 2/3 = 0.66, size 1 /3 = 0.33
+            return (float)_asteroid.size / AsteraXManager.TryGetInstance()
+                .asteroidsSO.GetGlobalMaxParentSize();
         }
     }
 }

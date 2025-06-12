@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Course.Attribute;
+using Course.Level;
 using Course.ObjectPool;
 using Course.ScriptableObject;
 using Course.Utility;
 using UnityEngine;
 using UnityEngine.Pool;
 using Utility;
+using Utility.DependencyInjection;
 using Random = UnityEngine.Random;
 
 namespace Course.Core
@@ -17,6 +20,9 @@ namespace Course.Core
         [Tooltip("This sets the AsteroidsScriptableObject to be used throughout the game.")]
         [field: SerializeField]
         public AsteroidsConfig asteroidsSO { get; private set; }
+
+        [SerializeField] 
+        private Transform anchor;
         
         #endregion
 
@@ -50,6 +56,16 @@ namespace Course.Core
         /// List of asteroid factories used for pooling asteroid objects.
         /// </summary>
         private List<IFactory<Asteroid>> _pools;
+        
+        /// <summary>
+        /// Our level driver. We subscribe to its OnLevelStarted and OnLevelCleared events.
+        /// </summary>
+        [Inject]
+        private ILevel _levelDriver;
+
+        private GameManager _gameManager;
+        
+        private bool _isSpawning = false;
 
         #endregion
 
@@ -59,10 +75,12 @@ namespace Course.Core
         /// Retrieves a random asteroid from the pool.
         /// </summary>
         /// <returns>A random asteroid instance.</returns>
-        public Asteroid GetRandomAsteroidFromPool()
+        public Asteroid GetRandomAsteroidFromPool(int size)
         {
             var idx = Random.Range(0, _pools.Count);
-            return _pools[idx].Get();
+            Asteroid ast = _pools[idx].Get();
+            ast.SetSize(size);
+            return ast;
         }
 
         /// <summary>
@@ -83,9 +101,15 @@ namespace Course.Core
         /// <param name="asteroid">The asteroid to remove.</param>
         public void RemoveAsteroid(Asteroid asteroid)
         {
+            if (asteroid == null || asteroid.gameObject == null)
+                return;
             if (_asteroids.IndexOf(asteroid) != -1)
             {
                 _asteroids.Remove(asteroid);
+                if (_asteroids.Count == 0 && _levelDriver != null)
+                {
+                    _levelDriver.LevelCleared();
+                }
             }
         }
 
@@ -141,23 +165,81 @@ namespace Course.Core
         #region Private Methods
 
         /// <summary>
-        /// Spawns a parent asteroid at a safe location.
+        /// Called each time the LevelBehaviour fires OnLevelStarted(levelNumber).
+        /// We read the spawn rules for that level, clear any leftovers, then spawn exactly
+        /// “parentCount” parents per rule, calling SpawnCluster(rule) each time.
         /// </summary>
-        /// <param name="i">The index of the asteroid being spawned.</param>
-        private void SpawnParentAsteroid(int i)
+        private void HandleLevelStarted()
         {
-            var ast = GetRandomAsteroidFromPool();
-            ast.gameObject.name = $"Asteroid_{i:00}";
+            if (_isSpawning) return;
+            if (_gameManager != null && _gameManager.currentStates != GameState.level)
+            {
+                return;
+            }
 
-            // Find a safe location for the asteroid to spawn
+            try
+            {
+                _isSpawning = true;
+                int levelNumber = _levelDriver.CurrentLevel;
+                if (!asteroidsSO.TryGetSpawnRuleForLevel(levelNumber, out var rule))
+                    return;
+
+                // Spawn exactly rule.parentCount parents:
+                for (int i = 0; i < rule.parentCount; i++)
+                {
+                    SpawnCluster(rule, i);
+                }
+
+                // If somehow we spawned nothing, still clear the level:
+                if (_asteroids.Count == 0)
+                {
+                    _levelDriver.LevelCleared();
+                }
+            }
+            finally
+            {
+                _isSpawning = false;
+            }
+        }
+        
+        private void HandleLevelCleared()
+        {
+            int levelNumber = _levelDriver.CurrentLevel;
+        }
+        
+        private void SpawnCluster(AsteroidsConfig.SpawnRule rule, int parentIndex)
+        {
+   
+            // a) Acquire one parent of size rule.parentSize
+            Asteroid parent = GetRandomAsteroidFromPool(rule.parentSize);
+            parent.SetPointValue(rule.parentPoints);
+            parent.SetDamageValue(rule.parentDamage);
+
+            parent.gameObject.name = $"Asteroid_{parentIndex:00}";
+            // b) Place it somewhere safe on screen
+            if (_player == null || parent == null) return;
             Vector3 pos;
             do
             {
                 pos = ScreenBounds.TryGetInstance().RANDOM_ON_SCREEN_LOC;
-            } while ((pos - _player.transform.position).magnitude < MIN_ASTEROID_DIST_FROM_PLAYER_SHIP);
+            }
+            while ((pos - _player.transform.position).magnitude < MIN_ASTEROID_DIST_FROM_PLAYER_SHIP);
 
-            ast.transform.position = pos;
-            ast.InitializeCluster(asteroidsSO.initialSize);
+            parent.transform.position = pos;
+            parent.Setup(rule.parentHealth); 
+
+            parent.SpawnDescendants(
+                rule.childSize,
+                rule.childCount,
+                rule.childHealth,
+                rule.childPoints,
+                rule.childDamage,
+                rule.grandchildSize,
+                rule.grandchildCount,
+                rule.grandchildHealth,
+                rule.grandchildPoints,
+                rule.grandchildDamage
+            );
         }
 
         #endregion
@@ -167,10 +249,10 @@ namespace Course.Core
         /// <summary>
         /// Unity's Awake method. Initializes asteroid factories and sets up references.
         /// </summary>
-        private void Awake()
+        protected override void Awake()
         {
             base.Awake();
-            asteroidParent = transform;
+            asteroidParent = anchor;
             _player = GameObject.FindWithTag("Player");
             _pools = new List<IFactory<Asteroid>>();
             foreach (var prefabGO in asteroidsSO.asteroidPrefabs)
@@ -178,6 +260,25 @@ namespace Course.Core
                 var prefabAst = prefabGO.GetComponent<Asteroid>();
                 var asteroidPool = new AsteroidPool(prefabAst, asteroidParent);
                 _pools.Add(new AsteroidFactory(asteroidPool));
+            }
+            _levelDriver.Initialize(1);
+        }
+
+        private void OnEnable()
+        {
+            if (_levelDriver != null)
+            {
+                _levelDriver.OnLevelStarted += HandleLevelStarted;
+                _levelDriver.OnLevelCleared += HandleLevelCleared;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_levelDriver != null)
+            {
+                _levelDriver.OnLevelStarted -= HandleLevelStarted;
+                _levelDriver.OnLevelCleared -= HandleLevelCleared;
             }
         }
 
@@ -187,25 +288,7 @@ namespace Course.Core
         private void Start()
         {
             _asteroids = new List<Asteroid>();
-
-            for (int i = 0; i < asteroidsSO.initialAsteroids; i++)
-            {
-                SpawnParentAsteroid(i);
-            }
-        }
-
-        /// <summary>
-        /// Unity's Update method. Spawns parent asteroids when the space key is pressed.
-        /// </summary>
-        private void Update()
-        {
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Space))
-            {
-                for (int i = 0; i < asteroidsSO.initialAsteroids; i++)
-                {
-                    SpawnParentAsteroid(i);
-                }
-            }
+            _gameManager = GameManager.TryGetInstance();
         }
 
         #endregion

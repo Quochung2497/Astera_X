@@ -50,7 +50,7 @@ namespace Course.Effect
         // Private
         private Effect OnCreate(Effect prefab)
         {
-            var instance = Instantiate(prefab);
+            var instance = Instantiate(prefab,transform);
             instance.gameObject.SetActive(false);
             return instance;
         }

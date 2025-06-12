@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Course.Utility.Events
 {
@@ -13,6 +14,10 @@ namespace Course.Utility.Events
     /// A collection of event bindings registered to the event bus.
     /// </summary>
     private static readonly HashSet<IEventBiding<T>> bindings = new HashSet<IEventBiding<T>>();
+    
+    /// <summary>
+    /// A reusable “snapshot” used to hold a copy of the current bindings each time we raise.
+    /// </summary>
 
     /// <summary>
     /// Registers a new event binding to the event bus.
@@ -37,10 +42,12 @@ namespace Course.Utility.Events
     /// <param name="event">The event to raise.</param>
     public static void Raise(T @event)
     {
-      foreach (var binding in bindings)
+      var snapshot = bindings.ToArray();
+
+      foreach (var b in snapshot)
       {
-        binding.OnEvent.Invoke(@event);
-        binding.OnEventNoArgs.Invoke();
+        b.OnEvent.Invoke(@event);
+        b.OnEventNoArgs.Invoke();
       }
     }
   }

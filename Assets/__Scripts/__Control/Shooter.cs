@@ -1,5 +1,6 @@
 using Course.Attribute.Bullet;
 using Course.Core;
+using Course.Effect;
 using Course.ObjectPool;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -36,7 +37,7 @@ namespace Course.Control
             // Set the bullet's position and rotation to match the spawn point.
             bullet.transform.position = spawnPoint.position;
             bullet.transform.rotation = spawnPoint.rotation;
-
+            
             // Launch the bullet in the turret's upward direction.
             bullet.Launch(turret.up);
         }

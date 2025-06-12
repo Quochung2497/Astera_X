@@ -1,7 +1,10 @@
 using Course.Attribute;
 using Course.Attribute.Bullet;
 using Course.Control;
+using Course.Control.Player;
 using Course.Control.Turret;
+using Course.Core;
+using Course.Effect;
 using Course.ObjectPool;
 using Course.Utility;
 using UnityEngine;
@@ -16,6 +19,10 @@ namespace Course.Installation
         [SerializeField] Transform bulletSpawnPoint;
         [SerializeField] Bullet bulletPrefab;
 
+        [Header("Trail VFX")]
+        [Tooltip("Assign the ExhaustTrailWrapBehaviour prefab here.")]
+        [SerializeField] private ExhaustTrailWrapBehaviour trailPrefab;
+        
         [Header("Input")]
         [SerializeField] InputReader inputReader;
         
@@ -25,14 +32,18 @@ namespace Course.Installation
 
         private Rotator _rotator;
         private Shooter _shooter;
-        private BulletFactory _bulletFactory;
+        
+        private IFactory<Bullet> _bulletFactory;
         private BulletPool _bulletPool;
+        
         private Transform _anchor;
         private IHealthBehaviour _healthBehaviour;
+        private IJumpBehaviour _jumpBehaviour;
 
-        public void Initialize(IHealthBehaviour healthBehaviour)
+        public void Initialize(IHealthBehaviour healthBehaviour, IJumpBehaviour jumpBehaviour)
         {
             _healthBehaviour = healthBehaviour;
+            _jumpBehaviour = jumpBehaviour;
         }
         
         public void AwakeInitialize() 
@@ -50,9 +61,10 @@ namespace Course.Installation
                 .WithInputReader(inputReader)
                 .WithRotator(_rotator)
                 .WithShooter(_shooter)
-                .WithJumpBehaviour(_healthBehaviour)
+                .WithHealthBehaviour(_healthBehaviour)
                 .WithSpawnTransform(bulletSpawnPoint)
                 .WithTurretTransform(turretTransform)
+                .WithJumpBehaviour(_jumpBehaviour)
                 .Build();
         }
 

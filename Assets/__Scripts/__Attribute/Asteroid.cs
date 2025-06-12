@@ -5,6 +5,7 @@ using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
 using UnityEngine.Pool;
+using Utility.DependencyInjection;
 using Random = UnityEngine.Random;
 
 namespace Course.Attribute
@@ -12,7 +13,8 @@ namespace Course.Attribute
     [RequireComponent(typeof(Rigidbody), typeof(OffScreenWrapper))]
     public class Asteroid : MonoBehaviour, IPoolObject<Asteroid>, IAsteroid
     {
-        public int          size { get; private set; }
+        public int size { get; private set; }
+        public int damage { get; private set; }
         
         #region Private Fields
 
@@ -25,6 +27,7 @@ namespace Course.Attribute
         private IHealthBehaviour _health; // Used to handle damage logic if needed
         private IDamageable _damageable;
         private AsteroidOnDeathEffect _asteroidOnDeathEffect;
+        private int                 _scoreValue;
         private const string BulletTag = "Bullet";
         private const string PlayerTag = "Player";
 
@@ -72,13 +75,13 @@ namespace Course.Attribute
         {
             _rb = GetComponent<Rigidbody>();
             _wrapper = wrapper;
-            _asteraXManager = AsteraXManager.TryGetInstance();
             _collider = GetComponent<Collider>();
+            _asteraXManager = AsteraXManager.TryGetInstance();
             _health = health;
             _asteroidOnDeathEffect = asteroidOnDeathEffect;
             _asteroidBehaviour = new AsteroidBehaviour(
                 _asteraXManager, 
-                frag => frag.Setup(), 
+                (frag, injectedHp) => frag.Setup(injectedHp),
                 pos  => ScreenBounds.TryGetInstance().OOB(pos),
                 (self, coll) => self.OnHitInternal(coll)
             );
@@ -111,19 +114,37 @@ namespace Course.Attribute
         }
 
         /// <summary>
-        /// Initializes a cluster of asteroids by releasing existing child asteroids,
-        /// setting the size of the cluster, and spawning child asteroids recursively.
+        /// Sets the internal “score value” that will be used when the asteroid dies.
         /// </summary>
-        /// <param name="clusterSize">The size of the asteroid cluster.</param>
-        public void InitializeCluster(int clusterSize)
+        public void SetPointValue(int pts)
         {
-            foreach (var old in GetComponentsInChildren<Asteroid>(includeInactive: true))
-                if (old != this)
-                    old.Release();
-    
-            SetSize(clusterSize);
-            Setup();  
-            SpawnChildrenRecursively(clusterSize);
+            _scoreValue = Mathf.Max(0, pts);
+        }
+
+        public void SetDamageValue(int amount)
+        {
+            damage = Mathf.Max(0, amount);;
+        }
+
+        /// <summary>
+        /// Sets up the asteroid's properties such as scale and initialization state.
+        /// Determines whether the asteroid is a child or parent and initializes accordingly.
+        /// </summary>
+        public void Setup(int hp)
+        {
+            if (!Application.isPlaying) return;
+            transform.localScale = Vector3.one * size * _asteraXManager.asteroidsSO.asteroidScale;
+            _damageable = new Damageable(Mathf.Max(1, hp));
+            _health?.Initialize(_damageable);
+            _asteroidOnDeathEffect?.Initialize(_health,this);
+            if (parentIsAsteroid)
+            {
+                InitAsteroidChild();
+            }
+            else
+            {
+                InitAsteroid();
+            }
         }
         
         #endregion
@@ -135,9 +156,38 @@ namespace Course.Attribute
         /// Delegates the spawning logic to the asteroid behavior.
         /// </summary>
         /// <param name="sizeLevel">The size level of the child asteroids to spawn.</param>
-        private void SpawnChildrenRecursively(int sizeLevel)
+        // private void SpawnChildrenRecursively(int sizeLevel)
+        // {
+        //     _asteroidBehaviour.SpawnChildren(sizeLevel, transform, gameObject.name);
+        // }
+        public void SpawnDescendants(
+            int childSize,
+            int childCount,
+            int childHealth,
+            int childPoints,
+            int childDamage,
+            int grandchildSize,
+            int grandchildCount,
+            int grandchildHealth,
+            int grandchildPoints,
+            int grandchildDamage
+        )
         {
-            _asteroidBehaviour.SpawnChildren(sizeLevel, transform, gameObject.name);
+            // Simply forward to the AsteroidBehaviour, passing our own transform and name:
+            _asteroidBehaviour.SpawnDescendent(
+                childSize,
+                childCount,
+                childHealth,
+                childPoints,
+                childDamage,
+                grandchildSize,
+                grandchildCount,
+                grandchildHealth,
+                grandchildPoints,
+                grandchildDamage,
+                transform,
+                gameObject.name
+            );
         }
 
         /// <summary>
@@ -163,27 +213,6 @@ namespace Course.Attribute
 
             _rb.linearVelocity = info.Linear;
             _rb.angularVelocity = info.Angular;
-        }
-
-        /// <summary>
-        /// Sets up the asteroid's properties such as scale and initialization state.
-        /// Determines whether the asteroid is a child or parent and initializes accordingly.
-        /// </summary>
-        private void Setup()
-        {
-            transform.localScale = Vector3.one * size * _asteraXManager.asteroidsSO.asteroidScale;
-            int hp = _asteraXManager.asteroidsSO.healthForAsteroidSize[size];
-            _damageable = new Damageable(hp);
-            _health?.Initialize(_damageable);
-            _asteroidOnDeathEffect?.Initialize(_health,this);
-            if (parentIsAsteroid)
-            {
-                InitAsteroidChild();
-            }
-            else
-            {
-                InitAsteroid();
-            }
         }
 
         /// <summary>
@@ -220,7 +249,6 @@ namespace Course.Attribute
         private void OnDisable()
         {
             Reset();
-            _asteraXManager.RemoveAsteroid(this);
             _health.OnDie -= Release;
         }
 
@@ -245,9 +273,10 @@ namespace Course.Attribute
                 _asteroidBehaviour.OnHit(this, coll);
                 if (other.TryGetComponent<Bullet.Bullet>(out var bullet))
                 {
-                    EventBus<AddScore>.Raise(new AddScore(_asteraXManager.asteroidsSO.pointsForAsteroidSize[size]));
+                    EventBus<AddScore>.Raise(new AddScore(_scoreValue));
                     _health.ChangeValue(bullet.Damage);                    
                 }
+                _asteraXManager.RemoveAsteroid(this);
             }
         }
 

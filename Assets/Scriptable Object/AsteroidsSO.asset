@@ -16,13 +16,76 @@ MonoBehaviour:
   <maxVel>k__BackingField: 10
   <maxAngularVel>k__BackingField: 10
   <asteroidScale>k__BackingField: 0.75
-  <damage>k__BackingField: 1
-  <numSmallerAsteroidsToSpawn>k__BackingField: 2
-  <initialSize>k__BackingField: 3
-  <initialAsteroids>k__BackingField: 3
-  <pointsForAsteroidSize>k__BackingField: 0000000090010000c800000064000000
   <asteroidPrefabs>k__BackingField:
   - {fileID: 1029653053436338, guid: 1293b0763d7d344e0b908c097078ac09, type: 3}
   - {fileID: 1669921439223048, guid: 5513cde93bb3343768ced35921a9c3c2, type: 3}
   - {fileID: 1317570492134680, guid: a6d3ccfc58a1f41368479aabb6050561, type: 3}
-  <healthForAsteroidSize>k__BackingField: 00000000010000000100000001000000
+  levelSpawnRules:
+  - levelNumber: 0
+    rule:
+      parentSize: 3
+      parentCount: 1
+      parentHealth: 1
+      parentPoints: 100
+      parentDamage: 1
+      childSize: 2
+      childCount: 1
+      childHealth: 1
+      childPoints: 200
+      childDamage: 1
+      grandchildSize: 1
+      grandchildCount: 1
+      grandchildHealth: 1
+      grandchildPoints: 400
+      grandchildDamage: 1
+  - levelNumber: 1
+    rule:
+      parentSize: 3
+      parentCount: 1
+      parentHealth: 1
+      parentPoints: 100
+      parentDamage: 1
+      childSize: 2
+      childCount: 1
+      childHealth: 1
+      childPoints: 200
+      childDamage: 1
+      grandchildSize: 1
+      grandchildCount: 1
+      grandchildHealth: 1
+      grandchildPoints: 400
+      grandchildDamage: 1
+  - levelNumber: 2
+    rule:
+      parentSize: 3
+      parentCount: 2
+      parentHealth: 1
+      parentPoints: 100
+      parentDamage: 1
+      childSize: 2
+      childCount: 2
+      childHealth: 1
+      childPoints: 200
+      childDamage: 1
+      grandchildSize: 1
+      grandchildCount: 2
+      grandchildHealth: 1
+      grandchildPoints: 400
+      grandchildDamage: 1
+  - levelNumber: 3
+    rule:
+      parentSize: 3
+      parentCount: 3
+      parentHealth: 1
+      parentPoints: 100
+      parentDamage: 1
+      childSize: 2
+      childCount: 2
+      childHealth: 1
+      childPoints: 200
+      childDamage: 1
+      grandchildSize: 1
+      grandchildCount: 2
+      grandchildHealth: 1
+      grandchildPoints: 400
+      grandchildDamage: 1

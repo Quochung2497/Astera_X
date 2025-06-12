@@ -1,19 +1,17 @@
 using System;
+using System.Collections.Generic;
 using Course.Attribute;
 using Course.Core;
+using Course.Level;
+using Course.Utility.Events;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Utility.DependencyInjection;
 
 namespace Course.UI
 {
     public class CanvasInstaller : MonoBehaviour, IInstaller
     {
-        [Header("Dependencies Injection")] 
-        [SerializeField]
-        private ScoreBehaviour score;
-        [FormerlySerializedAs("jump")] [SerializeField]
-        private HealthBehaviour health;
-        
         [Header("GUI Components")]
         [SerializeField]
         private AttributeUI scoreUI;
@@ -21,14 +19,31 @@ namespace Course.UI
         private AttributeUI jumpUI;
         [SerializeField]
         private GameOverUI gameOverUI;
+        [SerializeField]
+        private ActionButton mainMenuButton;
         
-        public void AwakeInitialize() { }
+        [Inject]
+        private IScoreBehaviour _scoreBehaviour;
+        [Inject]
+        private IHealthBehaviour _healthBehaviour;
+
+        [Inject] 
+        private ILevel _level;
+
+        public void AwakeInitialize()
+        { }
 
         public void StartInitialize()
         {
-            scoreUI.Initialize(score);
-            jumpUI.Initialize(health);
-            gameOverUI.Initialize(score, 0);
+            scoreUI.Initialize(_scoreBehaviour);
+            jumpUI.Initialize(_healthBehaviour);
+            gameOverUI.Initialize(_scoreBehaviour, _level);
+            mainMenuButton.Initialize(() =>
+            {
+                EventBus<GameStateChangedEvent>.Raise(
+                    new GameStateChangedEvent(GameState.preLevel)
+                );
+            });
         }
 
         private void Awake()

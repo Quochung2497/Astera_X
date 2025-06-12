@@ -58,8 +58,8 @@ namespace Course.Attribute
         public void ChangeValue(float value)
         {
             _damageable.ChangeValue(value);
-            OnValueChanged?.Invoke();
             if (IsDead) OnDie?.Invoke();
+            OnValueChanged?.Invoke();
         }
 
         /// <summary>

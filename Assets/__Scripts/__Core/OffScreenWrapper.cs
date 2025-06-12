@@ -1,3 +1,4 @@
+using System;
 using Course.Utility;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ namespace Course.Core
         /// </summary>
         private const float _epsilon = 0.001f;
 
+        public event Action<GameObject> OnWrap;
         /// <summary>
         /// Wraps the GameObject's position within the specified screen bounds.
         /// If the position exceeds the bounds, it is flipped and adjusted inward by a small epsilon value.
@@ -24,6 +26,7 @@ namespace Course.Core
         /// <param name="bounds">The screen bounds within which the GameObject's position is wrapped.</param>
         public void Wrap(ScreenBounds bounds)
         {
+            OnWrap?.Invoke(gameObject);
             // Convert the GameObject's position to local space relative to the bounds.
             var local = bounds.transform.InverseTransformPoint(transform.position);
 

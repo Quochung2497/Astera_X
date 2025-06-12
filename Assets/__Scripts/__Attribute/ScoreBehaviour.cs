@@ -63,6 +63,7 @@ namespace Course.Attribute
         public void ChangeValue(float value)
         {
             _score.ChangeValue(value);
+            EventBus<ScoreUpdated>.Raise(new ScoreUpdated(_score.Value));
             OnValueChanged?.Invoke();
         }
 

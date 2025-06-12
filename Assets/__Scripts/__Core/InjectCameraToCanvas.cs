@@ -29,7 +29,7 @@ namespace Course.Core
         private void InjectCameraIntoCanvases()
         {
             // Iterate through all Canvas objects in the scene.
-            foreach (var c in FindObjectsOfType<Canvas>())
+            foreach (var c in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
             {
                 // Check if the canvas render mode is ScreenSpaceCamera.
                 if (c.renderMode == RenderMode.ScreenSpaceCamera)

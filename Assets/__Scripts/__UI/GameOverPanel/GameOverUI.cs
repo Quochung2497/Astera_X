@@ -1,5 +1,6 @@
 using System.Collections;
 using Course.Attribute;
+using Course.Level;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -52,7 +53,7 @@ namespace Course.UI
         /// <summary>
         /// Stores the final level value.
         /// </summary>
-        private int _level;
+        private ILevel _level;
         
         // Fractions of reloadDelay to spend in each phase
         private const float EFFECT_PHASE   = 0.3f;
@@ -67,7 +68,7 @@ namespace Course.UI
         /// </summary>
         /// <param name="score">The score attribute behavior to bind to the UI.</param>
         /// <param name="level">The final level value to display.</param>
-        public void Initialize(IAttributeBehaviour score, int level)
+        public void Initialize(IAttributeBehaviour score, ILevel level)
         {
             _score = score;
             _level = level;
@@ -85,7 +86,7 @@ namespace Course.UI
         {
             var displayValue = Mathf.Max(Mathf.RoundToInt(_score.Value), 0);
             scoreText.text = ScoreLabel + displayValue.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
-            levelText.text = LevelLabel + _level;
+            levelText.text = LevelLabel + _level.CurrentLevel;
         }
 
         /// <summary>

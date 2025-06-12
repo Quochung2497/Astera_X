@@ -1,7 +1,9 @@
 using System;
 using Course.Attribute;
+using Course.Control.Player;
 using Course.Core;
 using Course.Utility;
+using Course.Utility.Events;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -40,6 +42,10 @@ namespace Course.Control.Turret
         /// </summary>
         private IHealthBehaviour _healthBehaviour;
 
+        private IJumpBehaviour _jumpBehaviour;
+        
+        private GameManager _gameManager;
+
         /// <summary>
         /// Transform representing the turret object.
         /// </summary>
@@ -59,6 +65,8 @@ namespace Course.Control.Turret
         /// Stores the screen position for debug drawing purposes.
         /// </summary>
         private Vector2 _screenPos;
+
+        private bool _isJumping = false;
 
         /// <summary>
         /// Indicates whether the turret behavior has been initialized.
@@ -82,7 +90,9 @@ namespace Course.Control.Turret
             IShooter shooter,
             Transform turret,
             Transform spawn,
-            IHealthBehaviour healthBehaviour)
+            IHealthBehaviour healthBehaviour,
+            IJumpBehaviour jumpBehaviour
+            )
         {
             _inputReader = inputReader;
             _rotator = rotator;
@@ -91,11 +101,14 @@ namespace Course.Control.Turret
             _spawn = spawn;
             _cam = Camera.main;
             _healthBehaviour = healthBehaviour;
+            _jumpBehaviour = jumpBehaviour;
+            _gameManager = GameManager.TryGetInstance();
             _inputReader.OnAimEvent += OnAim;
             _inputReader.OnFireEvent += OnFire;
+            _jumpBehaviour.OnDisappear += OnJumpDisappear;
+            _jumpBehaviour.OnReappear += OnJumpReappear;
             _isInitialized = true;
         }
-        
         /// <summary>
         /// Handles the aiming logic based on the provided screen position.
         /// </summary>
@@ -118,7 +131,7 @@ namespace Course.Control.Turret
         /// </summary>
         private void OnFire()
         {
-            if (_healthBehaviour.IsDead)
+            if (_healthBehaviour.IsDead || _gameManager.currentStates != GameState.level || _isJumping)
                 return;
             Vector2 screenPos;
             if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
@@ -141,7 +154,20 @@ namespace Course.Control.Turret
             }
         
             _shooter.Fire(_turret, _spawn);
+            EventBus<ShotFired>.Raise(new ShotFired());
         }
+        
+        
+        private void OnJumpReappear()
+        {
+            _isJumping = false;
+        }
+
+        private void OnJumpDisappear()
+        {
+            _isJumping = true;
+        }
+
 
         #endregion
 
@@ -229,6 +255,8 @@ namespace Course.Control.Turret
             /// Reference to the jump behavior component for handling jump-related actions.
             /// </summary>
             IHealthBehaviour _healthBehaviour;
+
+            private IJumpBehaviour _jumpBehaviour;
         
             /// <summary>
             /// Initializes a new instance of the TurretBuilder class with the specified TurretBehaviour instance.
@@ -299,9 +327,15 @@ namespace Course.Control.Turret
             /// </summary>
             /// <param name="healthBehaviour">The jump behavior component.</param>
             /// <returns>The current TurretBuilder instance.</returns>
-            public TurretBuilder WithJumpBehaviour(IHealthBehaviour healthBehaviour)
+            public TurretBuilder WithHealthBehaviour(IHealthBehaviour healthBehaviour)
             {
                 _healthBehaviour = healthBehaviour;
+                return this;
+            }
+
+            public TurretBuilder WithJumpBehaviour(IJumpBehaviour jumpBehaviour)
+            {
+                _jumpBehaviour = jumpBehaviour;
                 return this;
             }
         
@@ -316,7 +350,8 @@ namespace Course.Control.Turret
                 if (_shooter == null) throw new InvalidOperationException("Shooter not set");
                 if (_turretTransform == null) throw new InvalidOperationException("Turret Transform not set");
                 if (_spawnTransform == null) throw new InvalidOperationException("Spawn Transform not set");
-                if (_healthBehaviour == null) throw new InvalidOperationException("JumpBehaviour not set");
+                if (_healthBehaviour == null) throw new InvalidOperationException("HealthBehaviour not set");
+                if (_jumpBehaviour == null) throw new InvalidOperationException("JumpBehaviour not set");
         
                 _behaviour.Initialize(
                     _inputReader,
@@ -324,7 +359,8 @@ namespace Course.Control.Turret
                     _shooter,
                     _turretTransform,
                     _spawnTransform,
-                    _healthBehaviour
+                    _healthBehaviour,
+                    _jumpBehaviour
                 );
             }
         }

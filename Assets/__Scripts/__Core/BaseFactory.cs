@@ -5,6 +5,8 @@ namespace Course.Core
 {
     public abstract class BaseFactory<T> : IFactory<T> where T : class
     {
+        // TODO: Refactor the rest of IPoolObject in here and the prefab class shouldn't know anything about the pool. It just need to reference the factory.
+        
         /// <summary>
         /// The object pool used to manage instances of type <typeparamref name="T"/>.
         /// </summary>

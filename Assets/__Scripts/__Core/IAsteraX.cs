@@ -9,7 +9,7 @@ namespace Course.Core
         Transform asteroidParent { get; }
         AsteroidsConfig asteroidsSO { get; }
 
-        Asteroid GetRandomAsteroidFromPool();
+        Asteroid GetRandomAsteroidFromPool(int size);
         
         void AddAsteroid(Asteroid asteroid);
         void RemoveAsteroid(Asteroid asteroid);

@@ -21,7 +21,7 @@ namespace Course.Attribute
             Value = maxValue;
         }
 
-        #region IJump Implementation
+        #region IDamageable Implementation
 
         /// <summary>
         /// Event triggered when the value of the jump attribute changes.

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Course.UI;
 using Course.Utility;
@@ -58,7 +59,13 @@ namespace Course.Core
         /// </summary>
         protected override void Awake()
         {
-            base.Awake();
+            base.Awake();           
+        }
+
+        private void Start()
+        {
+            EventBus<GameStateChangedEvent>.Raise(
+                new GameStateChangedEvent(GameState.mainMenu));
         }
 
         #endregion
@@ -72,6 +79,22 @@ namespace Course.Core
         private void SetState(GameState newState)
         {
             currentStates = newState;
+            switch (newState)
+            {
+                case GameState.mainMenu:
+                case GameState.paused:
+                    Time.timeScale = 0f;
+                    break;
+
+                case GameState.level:
+                case GameState.none:
+                    Time.timeScale = 1f;
+                    break;
+                
+                default:
+                    Time.timeScale = 1f;
+                    break;
+            }
         }
 
         #endregion

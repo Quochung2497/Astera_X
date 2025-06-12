@@ -14,6 +14,10 @@ GameObject:
   - component: {fileID: 8970756826191714979}
   - component: {fileID: 5444421585517664719}
   - component: {fileID: 6092098089962251061}
+  - component: {fileID: 9026391602704415601}
+  - component: {fileID: 7099486719679587416}
+  - component: {fileID: 1163204676963612642}
+  - component: {fileID: 3815761020765121845}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -127,6 +131,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb2bf52cd01b962429a8d5c17ff985f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  activeStates: 4
+  activeStates: 38
   activeObjects:
   - {fileID: 0}
+--- !u!114 &9026391602704415601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8547332754108372098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 696cb7e0fcdf130409185eea6e341d3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  score: {fileID: 0}
+  health: {fileID: 0}
+  levelBehaviour: {fileID: 0}
+  manager: {fileID: 0}
+--- !u!114 &7099486719679587416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8547332754108372098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 277d18a79ed7d324f917ec490575ebfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1163204676963612642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8547332754108372098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cccd45057c17024eb3fbacf61833e68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3815761020765121845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8547332754108372098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6315b3aebf8ea104e813d2f9a4214758, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <asteroidsSO>k__BackingField: {fileID: 11400000, guid: 1122c0f3a74fd19428d5f189cbd23ce5,
+    type: 2}
+  anchor: {fileID: 0}

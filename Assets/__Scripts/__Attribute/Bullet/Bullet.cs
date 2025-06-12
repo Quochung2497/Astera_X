@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Course.Core;
 using Course.Utility;
@@ -16,6 +17,10 @@ namespace Course.Attribute.Bullet
         private Vector3       _launchPosition;
         private float _speed;
         private float _lifetime;
+        private Guid _spawnGuid;
+        private Coroutine _lifetimeCoroutine;
+        private IOffScreenWrapper _wrapper;
+        private bool _alreadyReleased = false;
 
         #region Public API
 
@@ -58,17 +63,21 @@ namespace Course.Attribute.Bullet
         public void Reset()
         {
             _rb.linearVelocity = Vector2.zero;
+            if (_lifetimeCoroutine != null)
+            {
+                StopCoroutine(_lifetimeCoroutine);
+                _lifetimeCoroutine = null;
+            }
         }
 
         /// <summary>
         /// Releases the bullet back to the pool or destroys it if no pool is available.
         /// </summary>
         public void Release()
-        {
-            if (_pool != null)
-                _pool.Release(this);
-            else
-                Destroy(gameObject);
+        { 
+            if (_alreadyReleased) return;
+            _alreadyReleased = true;
+            _pool.Release(this);
         }
 
 
@@ -97,6 +106,7 @@ namespace Course.Attribute.Bullet
         private void Awake()
         {
             _rb = GetComponent<Rigidbody>();
+            _wrapper = GetComponent<IOffScreenWrapper>();
         }
 
         /// <summary>
@@ -104,8 +114,11 @@ namespace Course.Attribute.Bullet
         /// </summary>
         private void OnEnable()
         {
+            _spawnGuid = Guid.NewGuid();
+            _alreadyReleased   = false;
+            _wrapper.OnWrap += HandleWrap;
             Reset();
-            StartCoroutine(SelfDestruct());
+            _lifetimeCoroutine = StartCoroutine(SelfDestruct());
         }
 
         /// <summary>
@@ -113,8 +126,15 @@ namespace Course.Attribute.Bullet
         /// </summary>
         private void OnDisable()
         {
+            _wrapper.OnWrap -= HandleWrap;
             Reset();
             StopAllCoroutines();
+        }
+        
+        private void HandleWrap(GameObject go)
+        {
+            if (go != gameObject) return;
+            EventBus<BulletWrapped>.Raise(new BulletWrapped(_spawnGuid));
         }
 
         /// <summary>
@@ -127,8 +147,17 @@ namespace Course.Attribute.Bullet
         {
             if (other.gameObject.layer != LayerNameProvider.GetLayer(LayerName.Asteroid))
                 return;
+            if (_lifetimeCoroutine != null)
+            {
+                StopCoroutine(_lifetimeCoroutine);
+                _lifetimeCoroutine = null;
+            }
             Release();
+            EventBus<AsteroidShot>.Raise(new AsteroidShot());
+            EventBus<AsteroidHitByBullet>
+                .Raise(new AsteroidHitByBullet(_spawnGuid));
         }
+        
 
         #endregion
     }

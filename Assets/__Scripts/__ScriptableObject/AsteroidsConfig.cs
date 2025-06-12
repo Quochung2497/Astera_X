@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Linq;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Course.ScriptableObject
 {
@@ -30,55 +33,100 @@ namespace Course.ScriptableObject
         [field: SerializeField] public float asteroidScale { get; private set; } = 0.75f;
         
         /// <summary>
-        /// Damage dealt by asteroids when they collide with the player.
-        /// </summary> 
-        [field: SerializeField] public int damage { get; private set; } = 1;
-    
-        /// <summary>
-        /// Number of smaller asteroids to spawn when an asteroid is destroyed.
-        /// Serialized field to allow customization in the Unity Inspector.
-        /// </summary>
-        [field: SerializeField] public int numSmallerAsteroidsToSpawn { get; private set; } = 2;
-    
-        /// <summary>
-        /// Initial size of asteroids.
-        /// Serialized field to allow customization in the Unity Inspector.
-        /// </summary>
-        [field: SerializeField] public int initialSize { get; private set; } = 3;
-    
-        /// <summary>
-        /// Number of asteroids to spawn at the start of the game.
-        /// Serialized field to allow customization in the Unity Inspector.
-        /// </summary>
-        [field: SerializeField] public int initialAsteroids { get; private set; } = 3;
-    
-        /// <summary>
-        /// Points awarded for destroying asteroids of different sizes.
-        /// Serialized field to allow customization in the Unity Inspector.
-        /// </summary>
-        [field: SerializeField] public int[] pointsForAsteroidSize { get; private set; } = {0, 400, 200, 100};
-    
-        /// <summary>
         /// Array of asteroid prefabs used for instantiation.
         /// Serialized field to allow customization in the Unity Inspector.
         /// </summary>
         [field: SerializeField] public GameObject[] asteroidPrefabs { get; private set; }
+
+        [Header("Per-Level Spawn Rules")]
+        [Tooltip("For each level, assign one LevelSpawnRule, which in turn contains an array of 'SpawnRule'.")]
+        [SerializeField]
+        private LevelSpawnRule[] levelSpawnRules;
         
-        
-        [Header("Health by Size")]
-        [Tooltip("Number of hit‐points for an asteroid of a given size.\n"
-                 + "Index 1 = health for size 1 (small), index 2 = health for size 2 (medium), etc.")]
-        [field: SerializeField]
-        public int[] healthForAsteroidSize { get; private set; } = { 0, 1, 2, 3 };
-    
-        /// <summary>
-        /// Retrieves a random asteroid prefab from the array of prefabs.
-        /// </summary>
-        /// <returns>A randomly selected asteroid prefab.</returns>
-        public GameObject GetAsteroidPrefab()
+        public bool TryGetSpawnRuleForLevel(int level, out SpawnRule outRule)
         {
-            int ndx = Random.Range(0, asteroidPrefabs.Length);
-            return asteroidPrefabs[ndx];
+            outRule = default;
+            if (levelSpawnRules == null || levelSpawnRules.Length == 0)
+                return false;
+
+            // 1) Exact match?
+            var exact = levelSpawnRules.FirstOrDefault(lsr => lsr.levelNumber == level);
+            if (exact.levelNumber == level)
+            {
+                outRule = exact.rule;
+                return true;
+            }
+
+            // 2) If level is beyond highest, bump the counts:
+            var highest = levelSpawnRules.OrderBy(lsr => lsr.levelNumber).Last();
+            if (level > highest.levelNumber)
+            {
+                outRule = highest.rule;   // copy
+                outRule.parentCount     += 1;
+                outRule.childCount      += 1;
+                outRule.grandchildCount += 1;
+                return true;
+            }
+
+            // 3) No rule
+            return false;
+        }
+        
+        public int GetGlobalMaxParentSize()
+        {
+            int maxSize = 1;
+            if (levelSpawnRules != null)
+            {
+                foreach (var lvlRule in levelSpawnRules)
+                {
+                    if (lvlRule.rule.parentSize > maxSize)
+                        maxSize = lvlRule.rule.parentSize;
+                }
+            }
+            return Mathf.Max(1, maxSize);
+        }
+        
+        private void OnValidate()
+        {
+            if (levelSpawnRules == null) return;
+            for (int i = 0; i < levelSpawnRules.Length; i++)
+            {
+                levelSpawnRules[i].levelNumber = i;
+            }
+        }
+        
+        [Serializable]
+        public struct LevelSpawnRule
+        {
+            public int levelNumber;  // the level index
+            public SpawnRule rule;        // the array of spawn‐rules for that level
+        }
+    
+        [Serializable]
+        public struct SpawnRule
+        {
+            [Header("––– Parent –––")]
+            [Min(1)] public int parentSize;       // e.g. “3” for a size‐3 parent
+            [Min(0)] public int parentCount;      // how many parents
+            [Min(1)] public int parentHealth; 
+            [Min(0)] public int parentPoints;
+            [Min(0)] public int parentDamage;
+            
+            [Space(6)]
+            [Header("––– Child –––")]
+            [Min(1)] public int childSize;        // fragment size for children
+            [Min(0)] public int childCount;       // how many children per parent
+            [Min(1)] public int childHealth;  
+            [Min(0)] public int childPoints; 
+            [Min(0)] public int childDamage; 
+            
+            [Space(6)]
+            [Header("––– Grandchild –––")]
+            [Min(1)] public int grandchildSize;   // fragment size for grandchildren
+            [Min(0)] public int grandchildCount;  // how many grandchildren per child
+            [Min(1)] public int grandchildHealth;
+            [Min(0)] public int grandchildPoints;
+            [Min(0)] public int grandchildDamage;
         }
     }
 }

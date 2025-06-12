@@ -36,7 +36,7 @@ namespace Course.Effect
         /// This is called whenever the IHealthBehaviour fires its OnDie event.
         /// We compute a “scaleFactor” (via the subclass override) and call the provider.
         /// </summary>
-        protected virtual void HandleOnDeath()
+        protected virtual void HandleOnTriggerEffect()
         {
             if (particlesEffectContainer == null || _owner == null)
                 return;     // no provider assigned → do nothing
