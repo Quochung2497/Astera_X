@@ -1,11 +1,11 @@
 using System.Collections;
 using Course.Attribute;
 using Course.Level;
+using Course.Services.Achievements;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
+using Utility.DependencyInjection;
 
 namespace Course.UI
 {
@@ -28,6 +28,12 @@ namespace Course.UI
         [SerializeField, Tooltip("Seconds to wait before reloading the scene")]
         private float reloadDelay = 5f;
         
+        [SerializeField, Tooltip(" Text to display when the game is over")]
+        private string normal= "Game Over";
+        
+        [SerializeField, Tooltip(" Text to display when a new high score is achieved")]
+        private string highScore = "New High Score!";
+        
         [SerializeField] 
         private FadeCanvas fadeCanvas;
 
@@ -39,6 +45,8 @@ namespace Course.UI
         /// Interface for managing the score attribute behavior.
         /// </summary>
         private IAttributeBehaviour _score;
+        
+        private IAchievementManager _achievementManager;
 
         /// <summary>
         /// Label text for displaying the final level.
@@ -68,10 +76,11 @@ namespace Course.UI
         /// </summary>
         /// <param name="score">The score attribute behavior to bind to the UI.</param>
         /// <param name="level">The final level value to display.</param>
-        public void Initialize(IAttributeBehaviour score, ILevel level)
+        public void Initialize(IAttributeBehaviour score, ILevel level, IAchievementManager achievementManager)
         {
-            _score = score;
-            _level = level;
+            _score ??= score;
+            _level ??= level;
+            _achievementManager ??= achievementManager;
         }
 
         #endregion
@@ -84,6 +93,10 @@ namespace Course.UI
         /// </summary>
         private void UpdateUI()
         {
+            if (_achievementManager.DidHitNewHighThisSession)
+                gameOverText.text = highScore;
+            else
+                gameOverText.text = normal;
             var displayValue = Mathf.Max(Mathf.RoundToInt(_score.Value), 0);
             scoreText.text = ScoreLabel + displayValue.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
             levelText.text = LevelLabel + _level.CurrentLevel;

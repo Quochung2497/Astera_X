@@ -16,10 +16,15 @@ MonoBehaviour:
   <maxVel>k__BackingField: 10
   <maxAngularVel>k__BackingField: 10
   <asteroidScale>k__BackingField: 0.75
-  <asteroidPrefabs>k__BackingField:
+  asteroidPrefabs:
   - {fileID: 1029653053436338, guid: 1293b0763d7d344e0b908c097078ac09, type: 3}
   - {fileID: 1669921439223048, guid: 5513cde93bb3343768ced35921a9c3c2, type: 3}
   - {fileID: 1317570492134680, guid: a6d3ccfc58a1f41368479aabb6050561, type: 3}
+  asteroidMobilePrefabs:
+  - {fileID: 1029653053436338, guid: c45eabbad90fa5a438770886d44b84a0, type: 3}
+  - {fileID: 1669921439223048, guid: 350adb0ec05d3da408b3ee00ba3c41af, type: 3}
+  - {fileID: 1317570492134680, guid: 44270e987eb095b4eb78a9474a5fa204, type: 3}
+  useMobilePrefabs: 0
   levelSpawnRules:
   - levelNumber: 0
     rule:

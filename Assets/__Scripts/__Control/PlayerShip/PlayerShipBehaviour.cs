@@ -1,12 +1,6 @@
 using System;
-using System.Collections;
-using Course.Attribute;
-using Course.Core;
 using Course.Utility;
-using Course.Utility.Events;
-using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Course.Control.Player
 { 
@@ -79,18 +73,21 @@ namespace Course.Control.Player
       /// <param name="tiltWithVelocity">The tilt logic component for tilting the ship.</param>
       private void Initialize(IMover mover, InputReader inputReader, float moveSpeed, Rigidbody rb, ITiltWithVelocity tiltWithVelocity, IJumpBehaviour jumpBehaviour)
       {
-          _mover = mover;
-          _inputReader = inputReader;
+          if (!_isInitialized)
+          {
+              _mover           = mover;
+              _inputReader     = inputReader;
+              _rb              = rb;
+              _tiltWithVelocity= tiltWithVelocity;
+              _jumpBehaviour   = jumpBehaviour;
+
+              _inputReader.OnMoveEvent   += OnMove;
+              _jumpBehaviour.OnDisappear += OnDisappear;
+              _jumpBehaviour.OnReappear  += OnReappear;
+
+              _isInitialized = true;
+          }
           _moveSpeed = moveSpeed;
-          _rb = rb;
-          _tiltWithVelocity = tiltWithVelocity;
-          _inputReader.OnMoveEvent += OnMove;
-      
-          _jumpBehaviour = jumpBehaviour;
-      
-          _jumpBehaviour.OnDisappear += OnDisappear;
-          _jumpBehaviour.OnReappear += OnReappear;
-          _isInitialized = true;
       }
       
       /// <summary>
@@ -120,7 +117,7 @@ namespace Course.Control.Player
       /// </summary>
       private void OnDisappear()
       {
-          if (_isJumping)
+          if (!_isInitialized ||_isJumping)
               return;
           _isJumping = true;
           _mover.Stop();
@@ -133,6 +130,7 @@ namespace Course.Control.Player
       /// </summary>
       private void OnReappear()
       {
+          if (!_isInitialized) return;
           _isJumping = false;
       }
       #endregion

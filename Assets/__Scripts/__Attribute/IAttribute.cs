@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace Course.Attribute
 {
@@ -8,9 +7,12 @@ namespace Course.Attribute
         float Value { get; }
         event Action OnValueChanged;
         float MaxValue { get; }
+        
+        float BaseValue { get; }
         void ChangeValue(float value);
         float Fraction();
         void ResetValue();
+        void SetMaxValue(float value);
     }       
 }
 

@@ -1,4 +1,3 @@
-using System;
 using Course.Core;
 using Course.Level;
 using UnityEngine;

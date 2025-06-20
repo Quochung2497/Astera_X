@@ -1,6 +1,4 @@
 using System;
-using Course.Attribute.Bullet;
-using Course.ScriptableObject;
 
 namespace Course.Utility.Events
 {

@@ -1,4 +1,3 @@
-using System;
 using Course.Core;
 using Course.UI;
 using Course.Utility.Events;
@@ -21,7 +20,6 @@ namespace Course.Installation
             _gameManager = GameManager.TryGetInstance();
             pauseButton?.Initialize(() =>
             {
-                Debug.Log($"pause button intialize");
                 if (_gameManager == null) return; 
                 GameState newState = (_gameManager.currentStates == GameState.level)
                     ? GameState.paused

@@ -1,11 +1,9 @@
 ﻿//#define DEBUG_AsteraX_LogMethods
 //#define DEBUG_AsteraX_RespawnNotifications
 
-using System.Collections;
 using System.Collections.Generic;
 using Course.Attribute;
 using Course.Attribute.Bullet;
-using Course.Core;
 using Course.ScriptableObject;
 using UnityEngine;
 

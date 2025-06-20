@@ -1,6 +1,8 @@
 using System;
 using Course.Input;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Gyroscope = UnityEngine.InputSystem.Gyroscope;
 
 namespace Course.Utility
 {
@@ -43,7 +45,6 @@ namespace Course.Utility
             if (_controls != null) return;  // already initialized
 
             _controls = new PlayerControls();
-
             // MOVE (WASD / stick / touch-drag / tilt)
             _controls.Player.Move.performed += ctx =>
                 OnMoveEvent?.Invoke(ctx.ReadValue<Vector2>());
@@ -84,6 +85,7 @@ namespace Course.Utility
             _controls.Player.Shoot.performed -= _ => OnFireEvent?.Invoke();
 
             _controls = null;
+
         }
         #endregion
     }

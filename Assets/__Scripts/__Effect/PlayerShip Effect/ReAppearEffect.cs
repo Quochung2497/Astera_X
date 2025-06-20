@@ -4,15 +4,12 @@ namespace Course.Effect
 {
     public class ReAppearEffect : Effect
     {
-        [SerializeField]
-        private ParticleSystem[] particleSystems;
-        
         public override void PlayEffect(float scaleFactor = 1f)
         {
             float maxDuration = 0f;
 
             // Play all ParticleSystems
-            foreach (var ps in particleSystems)
+            foreach (var ps in CurrentSystems)
             {
                 ps.Play();
                 maxDuration = Mathf.Max(maxDuration, ps.main.duration);

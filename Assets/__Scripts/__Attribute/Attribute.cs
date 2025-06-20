@@ -1,25 +1,24 @@
 using System;
-using UnityEngine;
 
 namespace Course.Attribute
 {
-    public class Score : IAttribute
+    public class Attribute : IAttribute
     {
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Score"/> class with the specified maximum value.
+        /// Initializes a new instance of the <see cref="Attribute"/> class with the specified maximum value.
         /// Sets the current value to the maximum value.
         /// </summary>
         /// <param name="maxValue">The maximum value of the score.</param>
-        public Score(float maxValue)
+        public Attribute(float maxValue)
         {
             MaxValue = maxValue;
             Value = maxValue;
+            BaseValue = maxValue;
         }
         #endregion
-
-
+        
         #region IAttribute<float> Implementation
 
         
@@ -38,6 +37,9 @@ namespace Course.Attribute
         /// Gets the maximum value of the score.
         /// </summary>
         public float MaxValue { get; private set; }
+        
+        
+        public float BaseValue { get; private set; }
         
         /// <summary>
         /// Calculates the fraction of the current value relative to the maximum value.
@@ -73,6 +75,13 @@ namespace Course.Attribute
         public void ResetValue()
         {
             ChangeValue(MaxValue);
+        }
+        
+        public void SetMaxValue(float maxValue)
+        {
+            MaxValue = maxValue;
+            Value = maxValue;
+            OnValueChanged?.Invoke();
         }
 
         #endregion

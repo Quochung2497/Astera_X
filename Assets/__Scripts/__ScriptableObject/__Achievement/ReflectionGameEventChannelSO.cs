@@ -12,7 +12,7 @@ namespace Course.ScriptableObject
         [Tooltip("Full type name of the IEvent (including namespace, assembly)")]
         public string EventTypeName;
 
-         private Type       _eventType;
+        private Type       _eventType;
         private Delegate   _handler;    // Action<TEvent>
         private object     _binding;    // EventBinding<TEvent> instance
         private MethodInfo _reg, _dereg;

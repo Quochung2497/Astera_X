@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 7099486719679587416}
   - component: {fileID: 1163204676963612642}
   - component: {fileID: 3815761020765121845}
+  - component: {fileID: 8323123358747573731}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -131,9 +132,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb2bf52cd01b962429a8d5c17ff985f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  activeStates: 38
+  activeStates: 36
   activeObjects:
   - {fileID: 0}
+  editorOnly: 0
 --- !u!114 &9026391602704415601
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,6 +152,9 @@ MonoBehaviour:
   health: {fileID: 0}
   levelBehaviour: {fileID: 0}
   manager: {fileID: 0}
+  achievementManager: {fileID: 0}
+  saveManager: {fileID: 0}
+  customizationManager: {fileID: 0}
 --- !u!114 &7099486719679587416
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,3 +194,16 @@ MonoBehaviour:
   <asteroidsSO>k__BackingField: {fileID: 11400000, guid: 1122c0f3a74fd19428d5f189cbd23ce5,
     type: 2}
   anchor: {fileID: 0}
+--- !u!114 &8323123358747573731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8547332754108372098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3391061f1335552479f4d2048aaa5430, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  asteroidsConfig: {fileID: 11400000, guid: 1122c0f3a74fd19428d5f189cbd23ce5, type: 2}

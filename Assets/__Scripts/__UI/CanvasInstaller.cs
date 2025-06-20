@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
 using Course.Attribute;
+using Course.Control;
 using Course.Core;
 using Course.Level;
+using Course.Services.Achievements;
 using Course.Utility.Events;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Utility.DependencyInjection;
 
 namespace Course.UI
@@ -26,7 +25,10 @@ namespace Course.UI
         private IScoreBehaviour _scoreBehaviour;
         [Inject]
         private IHealthBehaviour _healthBehaviour;
-
+        [Inject]
+        private IAchievementManager _achievementManager;
+        [Inject] 
+        private CustomizationManager _manager;
         [Inject] 
         private ILevel _level;
 
@@ -35,9 +37,9 @@ namespace Course.UI
 
         public void StartInitialize()
         {
-            scoreUI.Initialize(_scoreBehaviour);
-            jumpUI.Initialize(_healthBehaviour);
-            gameOverUI.Initialize(_scoreBehaviour, _level);
+            scoreUI.Initialize(_scoreBehaviour,_manager);
+            jumpUI.Initialize(_healthBehaviour,_manager);
+            gameOverUI.Initialize(_scoreBehaviour, _level, _achievementManager);
             mainMenuButton.Initialize(() =>
             {
                 EventBus<GameStateChangedEvent>.Raise(

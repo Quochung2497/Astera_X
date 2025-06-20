@@ -1,5 +1,4 @@
-﻿using System;
-using Course.Attribute;
+﻿using Course.Attribute;
 using Course.Core;
 using Course.Effect;
 using UnityEngine;

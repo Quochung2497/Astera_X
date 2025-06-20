@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using Course.Core;
-using Course.Utility;
 using UnityEngine;
 using UnityEngine.Pool;
 

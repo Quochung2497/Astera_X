@@ -1,11 +1,6 @@
-using System;
-using System.Collections;
-using Course.UI;
 using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using Utility;
 
 namespace Course.Core
 {

@@ -19,6 +19,7 @@ namespace Course.Attribute
         {
             MaxValue = maxValue;
             Value = maxValue;
+            BaseValue = maxValue;
         }
 
         #region IDamageable Implementation
@@ -37,6 +38,8 @@ namespace Course.Attribute
         /// Gets the maximum value of the jump attribute.
         /// </summary>
         public float MaxValue { get; private set; }
+        
+        public float BaseValue { get; private set; }
 
         /// <summary>
         /// Changes the value of the jump attribute by the specified amount.
@@ -50,7 +53,7 @@ namespace Course.Attribute
             {
                 Value = MaxValue;
             }
-            else if (Value < 0 && MaxValue != 0)
+            else if (Value < 1 && MaxValue != 0)
             {
                 Value = 0;
             }
@@ -85,6 +88,13 @@ namespace Course.Attribute
         /// Gets a value indicating whether the jump attribute is in a "dead" state.
         /// </summary>
         public bool IsDead => _isDead;
+
+        public void SetMaxValue(float maxValue)
+        {
+            MaxValue = maxValue;
+            Value = maxValue;
+            OnValueChanged?.Invoke();
+        }
 
         #endregion
     }

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using Course.UI;
-using Course.Utility.Events;
+﻿using Course.Utility.Events;
 using UnityEngine;
 
 public class ActiveOnlyDuringSomeGameStates : MonoBehaviour {
@@ -13,8 +11,22 @@ public class ActiveOnlyDuringSomeGameStates : MonoBehaviour {
     [SerializeField]
     private GameObject[] activeObjects;
     
+    [SerializeField] private bool editorOnly = false;
+    
     private EventBinding<GameStateChangedEvent> _binding;
 
+    private void Awake()
+    {
+        // If we're in a real (non-editor) build and this is editor-only, kill everything now.
+#if !UNITY_EDITOR
+        if (editorOnly)
+        {
+            foreach (var go in activeObjects)
+                go.SetActive(false);
+        }
+#endif
+    }
+    
     void OnEnable()
     {
         // subscribe even if GameObject.disabled

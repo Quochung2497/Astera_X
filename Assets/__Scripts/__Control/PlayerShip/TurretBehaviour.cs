@@ -94,20 +94,25 @@ namespace Course.Control.Turret
             IJumpBehaviour jumpBehaviour
             )
         {
-            _inputReader = inputReader;
-            _rotator = rotator;
-            _shooter = shooter;
-            _turret = turret;
-            _spawn = spawn;
-            _cam = Camera.main;
-            _healthBehaviour = healthBehaviour;
-            _jumpBehaviour = jumpBehaviour;
-            _gameManager = GameManager.TryGetInstance();
-            _inputReader.OnAimEvent += OnAim;
-            _inputReader.OnFireEvent += OnFire;
-            _jumpBehaviour.OnDisappear += OnJumpDisappear;
-            _jumpBehaviour.OnReappear += OnJumpReappear;
-            _isInitialized = true;
+            if (!_isInitialized)
+            {
+                _inputReader      = inputReader;
+                _rotator          = rotator;
+                _healthBehaviour  = healthBehaviour;
+                _jumpBehaviour    = jumpBehaviour;
+                _cam              = Camera.main;
+                _gameManager = GameManager.TryGetInstance();
+
+                _inputReader.OnAimEvent  += OnAim;
+                _inputReader.OnFireEvent += OnFire;
+                _jumpBehaviour.OnDisappear += OnJumpDisappear;
+                _jumpBehaviour.OnReappear  += OnJumpReappear;
+
+                _isInitialized = true;
+            }
+            _shooter          = shooter;
+            _turret = turret; 
+            _spawn  = spawn;
         }
         /// <summary>
         /// Handles the aiming logic based on the provided screen position.

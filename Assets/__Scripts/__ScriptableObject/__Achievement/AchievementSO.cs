@@ -1,4 +1,3 @@
-using Course.Utility.Events;
 using UnityEngine;
 
 namespace Course.ScriptableObject

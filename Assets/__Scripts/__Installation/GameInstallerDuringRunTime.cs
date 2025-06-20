@@ -1,7 +1,9 @@
 using Course.Attribute;
+using Course.Control;
 using Course.Core;
 using Course.Level;
 using Course.Services.Achievements;
+using Course.Services.SaveService;
 using UnityEngine;
 using Utility.DependencyInjection;
 
@@ -19,6 +21,10 @@ namespace Course.Installation
 
         [SerializeField] private AchievementManager achievementManager;
         
+        [SerializeField] private SaveManager saveManager;
+
+        [SerializeField] private CustomizationManager customizationManager;
+        
         [Provide]
         public IScoreBehaviour ProvideScore() => score;
         [Provide]
@@ -31,6 +37,12 @@ namespace Course.Installation
         public IAsteraX ProvideAsteraX() => manager;
         
         [Provide]
-        public AchievementManager ProvideAchievementManager() => achievementManager;
+        public IAchievementManager ProvideAchievementManager() => achievementManager;
+        
+        [Provide]
+        public ISaveManager ProvideSaveManager() => saveManager;
+        
+        [Provide] 
+        public CustomizationManager ProvideCustomizationManager() => customizationManager;
     }
 }

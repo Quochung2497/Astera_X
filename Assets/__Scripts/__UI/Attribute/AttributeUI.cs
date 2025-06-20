@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using Course.Attribute;
+using Course.Control;
 using TMPro;
 using UnityEngine;
 
@@ -46,6 +47,8 @@ namespace Course.UI
         /// </summary>
         private IAttributeBehaviour _attribute;
 
+        private CustomizationManager _manager;
+
         /// <summary>
         /// Flag indicating whether the UI has been initialized.
         /// </summary>
@@ -60,10 +63,12 @@ namespace Course.UI
         /// Subscribes to the OnValueChanged event and updates the UI.
         /// </summary>
         /// <param name="attribute">The attribute behavior to bind to the UI.</param>
-        public void Initialize(IAttributeBehaviour attribute)
+        public void Initialize(IAttributeBehaviour attribute, CustomizationManager manager)
         {
             _attribute = attribute;
             _attribute.OnValueChanged += UpdateUI;
+            _manager = manager ?? throw new ArgumentNullException(nameof(manager));
+            _manager.OnCustomizationChanged += UpdateUI;
             UpdateUI();
             _isInitialized = true;
         }
@@ -110,6 +115,7 @@ namespace Course.UI
             if (!_isInitialized)
                 return;
             _attribute.OnValueChanged -= UpdateUI;
+            _manager.OnCustomizationChanged -= UpdateUI;
         }
 
         #endregion

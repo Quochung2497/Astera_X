@@ -1,6 +1,4 @@
-using System;
 using Course.Attribute;
-using Course.Effect;
 using UnityEngine;
 
 namespace Course.Effect

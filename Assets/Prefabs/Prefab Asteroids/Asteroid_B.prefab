@@ -192,8 +192,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   particlesEffectContainer: {fileID: 11400000, guid: 1b5bebd889805e147a37883d6d8ff4af,
     type: 2}
-  particlesEffectContainer: {fileID: 11400000, guid: 1b5bebd889805e147a37883d6d8ff4af,
-    type: 2}
 --- !u!114 &-7988852106901167197
 MonoBehaviour:
   m_ObjectHideFlags: 0

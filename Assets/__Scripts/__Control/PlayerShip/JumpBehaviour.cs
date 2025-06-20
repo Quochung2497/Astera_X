@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Course.Attribute;
+using Course.Control;
 using Course.Control.Player;
 using Course.Core;
 using Course.Utility.Events;
@@ -36,23 +39,18 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
     private IAsteraX        _asteraX;
     private Renderer[]      _renderers;
     private Collider        _collider;
+    private List<Renderer> _renderersCache;
     private bool            _isJumping = false;
     private bool            _isInitialized = false;
     /// <summary>
     /// The amount of damage taken by the player ship when colliding with an asteroid.
     /// </summary>
     private int _damage;
-
-    /// <summary>
-    /// Flag indicating whether the player ship is immune to hits.
-    /// </summary>
-    private bool _hitImmune = false;
     
     /// <summary>
     /// Event raised when the game state changes to "Game Over".
     /// </summary>
     private GameStateChangedEvent _gameStateGameOverevent;
-
     #endregion
 
     #region Public Methods
@@ -63,7 +61,6 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
                            ?? throw new ArgumentNullException(nameof(healthBehaviour));
 
         _asteraX = asteraX;
-        _renderers = GetComponentsInChildren<Renderer>();
         _collider  = GetComponent<Collider>();
         _gameStateGameOverevent = new GameStateChangedEvent(GameState.gameOver);
 
@@ -83,7 +80,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
     
     private void OnEnable()
     {
-        if (_healthBehaviour == null && !_isInitialized)
+        if (_healthBehaviour == null || !_isInitialized)
             return;
         Debug.Assert(_healthBehaviour != null, nameof(_healthBehaviour) + " != null");
         _healthBehaviour.OnValueChanged += HandleOnHealthChanged;
@@ -92,7 +89,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 
     private void OnDisable()
     {
-        if (_healthBehaviour == null && !_isInitialized)
+        if (_healthBehaviour == null || !_isInitialized)
             return;
         Debug.Assert(_healthBehaviour != null, nameof(_healthBehaviour) + " != null");
         _healthBehaviour.OnValueChanged -= HandleOnHealthChanged;
@@ -101,7 +98,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 
     private void HandleOnHealthChanged()
     {
-        if (_isJumping)
+        if (_isJumping || GameManager.TryGetInstance().currentStates != GameState.level)
             return;
 
         StartCoroutine(JumpSequence());
@@ -110,17 +107,17 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
     private IEnumerator JumpSequence()
     {
         _isJumping = true;
-
-        OnDisappear?.Invoke();
-
-        SetVisible(false);
-
+        
         if (_healthBehaviour.IsDead)
         {
             _isJumping = false;
             yield break;
         }
-
+        
+        OnDisappear?.Invoke();
+        
+        SetVisible(false);
+        
         yield return new WaitForSeconds(jumpDelay);
 
         Vector3 safePosition = _asteraX.GetSafeSpawnPosition(
@@ -134,19 +131,20 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 
         OnReappear?.Invoke();
 
-        _isJumping = false;
         yield return new WaitForSeconds(immuneTime);
-        _hitImmune = false;
+        _isJumping = false;
     }
 
     private void HandleOnDeath()
     {
+        OnDisappear?.Invoke();
         SetVisible(false);
         EventBus<GameStateChangedEvent>.Raise(_gameStateGameOverevent);
     }
     
     private void SetVisible(bool visible)
     {
+        _renderers = GetComponentsInChildren<Renderer>(); //TODO: Optimize this if possible
         foreach (var r in _renderers) r.enabled = visible;
         if (_collider != null) _collider.enabled = visible;
     }
@@ -159,12 +157,11 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
     /// <param name="other">The collision data.</param>
     private void OnCollisionEnter(Collision other)
     {
-        if (!_isInitialized || _isJumping || _hitImmune)
+        if (!_isInitialized || _isJumping)
             return;
 
         if (other.gameObject.layer == LayerNameProvider.GetLayer(LayerName.Asteroid))
         {
-            _hitImmune = true;
             var ast = other.gameObject.GetComponent<Asteroid>();
             _damage = ast.damage;
             _healthBehaviour?.ChangeValue(-_damage);

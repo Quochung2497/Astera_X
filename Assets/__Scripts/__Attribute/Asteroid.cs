@@ -1,12 +1,11 @@
-﻿using Course.Control.Asteroid;
+﻿using System;
+using Course.Control.Asteroid;
 using Course.Core;
 using Course.Effect;
 using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
 using UnityEngine.Pool;
-using Utility.DependencyInjection;
-using Random = UnityEngine.Random;
 
 namespace Course.Attribute
 {
@@ -267,7 +266,7 @@ namespace Course.Attribute
                 return;
             }
 
-            var other = coll.gameObject;
+            GameObject other = coll.gameObject;
             if (other.CompareTag(BulletTag) || coll.transform.root.CompareTag(PlayerTag))
             {
                 _asteroidBehaviour.OnHit(this, coll);
@@ -275,6 +274,10 @@ namespace Course.Attribute
                 {
                     EventBus<AddScore>.Raise(new AddScore(_scoreValue));
                     _health.ChangeValue(bullet.Damage);                    
+                }
+                else
+                {
+                    _health.ChangeValue(-(_health.MaxValue)); 
                 }
                 _asteraXManager.RemoveAsteroid(this);
             }

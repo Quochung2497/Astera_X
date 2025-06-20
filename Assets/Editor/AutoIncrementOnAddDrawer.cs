@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
-using System.Linq;
 
 /// <summary>
 /// A PropertyDrawer that wraps any array marked [AutoIncrementOnAdd("someIntField")]

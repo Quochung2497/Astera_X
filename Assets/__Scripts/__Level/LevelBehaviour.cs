@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using Course.Core;
 using Course.Utility.Events;
 using UnityEngine;

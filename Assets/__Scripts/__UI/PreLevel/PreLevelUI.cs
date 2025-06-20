@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Course.Core;
 using Course.Level;

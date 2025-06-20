@@ -19,6 +19,9 @@ namespace Course.Attribute
         public void Initialize(IDamageable damageable)
         {
             _damageable ??= damageable;
+            
+            // And fire once so UI starts with the correct value:
+            OnValueChanged?.Invoke();
         }
 
         #endregion
@@ -58,7 +61,8 @@ namespace Course.Attribute
         public void ChangeValue(float value)
         {
             _damageable.ChangeValue(value);
-            if (IsDead) OnDie?.Invoke();
+            if (IsDead)
+                OnDie?.Invoke();
             OnValueChanged?.Invoke();
         }
 

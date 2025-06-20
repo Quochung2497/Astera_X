@@ -1,7 +1,6 @@
 using Course.Attribute;
 using Course.Core;
 using UnityEngine;
-using Utility.DependencyInjection;
 
 namespace Course.Effect
 {

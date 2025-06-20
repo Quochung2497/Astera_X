@@ -31,6 +31,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5770062884847114243}
+  - {fileID: 834865805925235612}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2659404024489459418
@@ -47,6 +48,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   particleSystems:
   - {fileID: 3276155845555503157}
+  mobileParticleSystems:
+  - {fileID: 8571007580193072042}
+  isMobilePlatform: 1
 --- !u!1001 &3343449162311549796
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -126,4 +130,84 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 9112243104300276583, guid: 93068d0883279c94aa328bd2a5f1dba9,
     type: 3}
   m_PrefabInstance: {fileID: 3343449162311549796}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &8494698012673122555
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 4390427363361603208}
+    m_Modifications:
+    - target: {fileID: 555030440057765435, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_Name
+      value: Ship Jump Disappear Effect Prefab Mobile Version
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8268e79f4c38d184f8818b7eb5438b71, type: 3}
+--- !u!4 &834865805925235612 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9112243104300276583, guid: 8268e79f4c38d184f8818b7eb5438b71,
+    type: 3}
+  m_PrefabInstance: {fileID: 8494698012673122555}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &8571007580193072042 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 221080101269242705, guid: 8268e79f4c38d184f8818b7eb5438b71,
+    type: 3}
+  m_PrefabInstance: {fileID: 8494698012673122555}
   m_PrefabAsset: {fileID: 0}

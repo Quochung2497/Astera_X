@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace Course.ScriptableObject
 {
@@ -31,12 +30,18 @@ namespace Course.ScriptableObject
         /// Serialized field to allow customization in the Unity Inspector.
         /// </summary>
         [field: SerializeField] public float asteroidScale { get; private set; } = 0.75f;
-        
+
         /// <summary>
         /// Array of asteroid prefabs used for instantiation.
         /// Serialized field to allow customization in the Unity Inspector.
         /// </summary>
-        [field: SerializeField] public GameObject[] asteroidPrefabs { get; private set; }
+        [SerializeField] private GameObject[] asteroidPrefabs;
+        
+        [SerializeField] private GameObject[] asteroidMobilePrefabs;
+        
+        #if UNITY_EDITOR
+        [SerializeField] private bool useMobilePrefabs = false; // for editor testing
+        #endif
 
         [Header("Per-Level Spawn Rules")]
         [Tooltip("For each level, assign one LevelSpawnRule, which in turn contains an array of 'SpawnRule'.")]
@@ -72,6 +77,28 @@ namespace Course.ScriptableObject
             return false;
         }
         
+        public GameObject[] GetPrefabs()
+        {
+#if UNITY_EDITOR
+            if (useMobilePrefabs)
+            {
+                return asteroidMobilePrefabs.Length > 0
+                    ? asteroidMobilePrefabs
+                    : asteroidPrefabs;
+            }
+            else
+            {
+                return asteroidPrefabs;
+            }
+#elif UNITY_IOS || UNITY_ANDROID
+            return asteroidMobilePrefabs.Length > 0
+                ? asteroidMobilePrefabs
+                : asteroidPrefabs;
+#else
+            return asteroidPrefabs;
+#endif
+        }
+        
         public int GetGlobalMaxParentSize()
         {
             int maxSize = 1;
@@ -93,6 +120,14 @@ namespace Course.ScriptableObject
             {
                 levelSpawnRules[i].levelNumber = i;
             }
+        }
+        
+        public void SetLevelSpawnRules(LevelSpawnRule[] newRules)
+        {
+            levelSpawnRules = newRules;
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.SetDirty(this);
+#endif
         }
         
         [Serializable]

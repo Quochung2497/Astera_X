@@ -239,7 +239,7 @@ namespace Course.Input
                     ""id"": ""fff866cc-145d-4d33-813c-e6bbba692dfa"",
                     ""path"": ""<Sensor>/{Tilt}"",
                     ""interactions"": """",
-                    ""processors"": """",
+                    ""processors"": ""StickDeadzone"",
                     ""groups"": """",
                     ""action"": ""Move"",
                     ""isComposite"": false,

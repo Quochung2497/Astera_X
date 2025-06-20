@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Course.Attribute;
 using Course.Level;
 using Course.ObjectPool;
 using Course.ScriptableObject;
 using Course.Utility;
 using UnityEngine;
-using UnityEngine.Pool;
-using Utility;
 using Utility.DependencyInjection;
 using Random = UnityEngine.Random;
 
@@ -255,7 +252,9 @@ namespace Course.Core
             asteroidParent = anchor;
             _player = GameObject.FindWithTag("Player");
             _pools = new List<IFactory<Asteroid>>();
-            foreach (var prefabGO in asteroidsSO.asteroidPrefabs)
+            
+            var prefabs = asteroidsSO.GetPrefabs();  
+            foreach (var prefabGO in prefabs)
             {
                 var prefabAst = prefabGO.GetComponent<Asteroid>();
                 var asteroidPool = new AsteroidPool(prefabAst, asteroidParent);

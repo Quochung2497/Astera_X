@@ -1,7 +1,5 @@
-using System.Runtime.CompilerServices;
 using Course.Utility;
 using UnityEngine;
-using Utility;
 
 namespace Course.Core
 {

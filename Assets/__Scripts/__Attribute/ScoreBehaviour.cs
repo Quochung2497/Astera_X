@@ -77,7 +77,7 @@ namespace Course.Attribute
 
         #endregion
 
-        #region Unity Life
+        #region Unity Lifecycle Methods
 
         /// <summary>
         /// Unity's OnEnable method, called when the object becomes enabled.

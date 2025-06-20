@@ -1,4 +1,3 @@
-using System;
 using Course.Core;
 using Course.Effect;
 using UnityEngine;
