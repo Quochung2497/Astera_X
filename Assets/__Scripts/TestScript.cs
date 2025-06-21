@@ -1,13 +1,15 @@
+using Course.Core;
 using Unity.Services.Analytics;
 using Unity.Services.Core;
 using UnityEngine;
 
 public class TestScript : MonoBehaviour
 {
-    async void Awake()
+    private void Update()
     {
-        // Initialize Unity Gaming Services
-        await UnityServices.InitializeAsync();
-        Debug.Log($"Analytics ready: {AnalyticsService.Instance}");
+        if(Input.GetKeyDown(KeyCode.Space))
+            UnityServiceBootstrap.TryGetInstance().RunAds();
+        if(Input.GetKeyDown(KeyCode.B))
+            UnityServiceBootstrap.TryGetInstance().RunBanner();
     }
 }

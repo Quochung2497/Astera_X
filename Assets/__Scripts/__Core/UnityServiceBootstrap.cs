@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using Course.Control;
 using Course.ScriptableObject;
+using Course.ScriptableObject.UnityServices;
 using Course.Services.Achievements;
 using Course.Services.Unity;
+using Course.Utility;
 using Course.Utility.Events;
 using Unity.Services.RemoteConfig;
 using UnityEngine;
@@ -13,7 +15,7 @@ using Gyroscope = UnityEngine.InputSystem.Gyroscope;
 
 namespace Course.Core
 {
-    public class UnityServiceBootstrap : MonoBehaviour
+    public class UnityServiceBootstrap : PrivateSingleton<UnityServiceBootstrap>
     {
         private int   _currentLevel;
         private int   _lastScore;
@@ -23,26 +25,57 @@ namespace Course.Core
         private EventBinding<LevelReached>         _levelEvent;
         private EventBinding<ScoreUpdated>         _scoreEvent;
         private EventBinding<GameStateChangedEvent> _gameOverEvent;
+        private IAdsService _adsService;
 
         [SerializeField] private AsteroidsConfig asteroidsConfig;
+        [SerializeField] private UnityServicesConfig unityServicesConfig;
+        
         [Inject] private IAchievementManager _achievementManager;
         [Inject] private CustomizationManager _customization;
 
-        private async void Awake()
+        public void RunAds()
         {
-            await UnityAnalytics.InitializeAsync();
-            await UnityRemoteConfig.InitializeAsync();
-            UnityRemoteConfig.FetchCompleted += OnRemoteConfigFetched;
-            UnityRemoteConfig.FetchConfigs();
-            // TODO: Uncomment the following lines if you want to enable accelerometer and gyroscope input
-            // if (Accelerometer.current == null)
-            //     InputSystem.AddDevice<Accelerometer>();
-            // InputSystem.EnableDevice(Accelerometer.current);
-            // if(Gyroscope.current == null)
-            //     InputSystem.AddDevice<Gyroscope>();
-            // InputSystem.EnableDevice(Gyroscope.current);
-            // foreach (var d in InputSystem.devices)
-            //     Debug.Log($"Device: {d}");
+            _adsService.LoadInterstitial();
+            _adsService.ShowInterstitial();
+        }
+
+        public void RunBanner()
+        {
+            _adsService.LoadBanner("Rewarded_Android");
+            _adsService.ShowBanner("Rewarded_Android");
+        }
+        
+        #region Unity Life Cycle
+
+        protected override async void Awake()
+        {
+            try
+            {
+                base.Awake();
+                await UnityAnalytics.InitializeAsync();
+            
+                await UnityRemoteConfig.InitializeAsync();
+                UnityRemoteConfig.FetchCompleted += OnRemoteConfigFetched;
+                UnityRemoteConfig.FetchConfigs();
+            
+                _adsService = new AdsService();
+                _adsService.Initialize(unityServicesConfig.GameId, unityServicesConfig.testMode);
+            
+                // TODO: Uncomment the following lines if you want to enable accelerometer and gyroscope input
+                // if (Accelerometer.current == null)
+                //     InputSystem.AddDevice<Accelerometer>();
+                // InputSystem.EnableDevice(Accelerometer.current);
+                // if(Gyroscope.current == null)
+                //     InputSystem.AddDevice<Gyroscope>();
+                // InputSystem.EnableDevice(Gyroscope.current);
+                // foreach (var d in InputSystem.devices)
+                //     Debug.Log($"Device: {d}");
+            }
+            catch (Exception e)
+            {
+                throw new Exception(
+                    $"Failed to initialize Unity Services: {e.Message}", e); 
+            }
         }
 
         private void OnEnable()
@@ -71,6 +104,8 @@ namespace Course.Core
             UnityRemoteConfig.FetchCompleted -= OnRemoteConfigFetched;
         }
 
+        #endregion
+        
         #region LevelStart
 
         private void RegisterLevelEvents()
