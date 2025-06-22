@@ -173,7 +173,7 @@ namespace Course.Input
                     ""id"": ""1a8e5e87-42a3-40f1-ac74-753900843a73"",
                     ""path"": ""2DVector"",
                     ""interactions"": """",
-                    ""processors"": """",
+                    ""processors"": ""StickDeadzone"",
                     ""groups"": """",
                     ""action"": ""Move"",
                     ""isComposite"": true,

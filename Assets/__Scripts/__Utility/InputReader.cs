@@ -87,6 +87,9 @@ namespace Course.Utility
             _controls = null;
 
         }
+        
+        public void FeedMove(Vector2 direction) 
+            => OnMoveEvent?.Invoke(direction);
         #endregion
     }
 }

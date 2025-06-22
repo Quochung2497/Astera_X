@@ -8,4 +8,5 @@ public interface IInputReader
     event Action         OnFireEvent;
     void Initialize();
     void Shutdown();
+    void FeedMove(Vector2 direction);
 }
