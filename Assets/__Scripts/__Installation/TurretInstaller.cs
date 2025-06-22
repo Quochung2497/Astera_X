@@ -44,7 +44,7 @@ namespace Course.Installation
         private TurretBehaviour.TurretBuilder _builder;
         
         [Inject]
-        private CustomizationManager _customizationManager;
+        private ICustomization _customizationManager;
 
         public void Initialize(IHealthBehaviour healthBehaviour, IJumpBehaviour jumpBehaviour)
         {

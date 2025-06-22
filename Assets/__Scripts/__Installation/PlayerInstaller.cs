@@ -52,7 +52,7 @@ namespace Course.Installation
         [Inject]
         private IAsteraX _manager;
         [Inject]
-        private CustomizationManager _customizationManager;
+        private ICustomization _customizationManager;
 
         public void AwakeInitialize()
         {

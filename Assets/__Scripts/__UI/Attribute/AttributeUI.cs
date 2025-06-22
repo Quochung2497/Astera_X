@@ -47,7 +47,7 @@ namespace Course.UI
         /// </summary>
         private IAttributeBehaviour _attribute;
 
-        private CustomizationManager _manager;
+        private ICustomization _manager;
 
         /// <summary>
         /// Flag indicating whether the UI has been initialized.
@@ -63,7 +63,7 @@ namespace Course.UI
         /// Subscribes to the OnValueChanged event and updates the UI.
         /// </summary>
         /// <param name="attribute">The attribute behavior to bind to the UI.</param>
-        public void Initialize(IAttributeBehaviour attribute, CustomizationManager manager)
+        public void Initialize(IAttributeBehaviour attribute, ICustomization manager)
         {
             _attribute = attribute;
             _attribute.OnValueChanged += UpdateUI;

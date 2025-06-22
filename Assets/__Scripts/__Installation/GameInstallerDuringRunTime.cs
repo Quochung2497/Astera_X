@@ -43,6 +43,6 @@ namespace Course.Installation
         public ISaveManager ProvideSaveManager() => saveManager;
         
         [Provide] 
-        public CustomizationManager ProvideCustomizationManager() => customizationManager;
+        public ICustomization ProvideCustomizationManager() => customizationManager;
     }
 }

@@ -13,7 +13,7 @@ using Utility.DependencyInjection;
 namespace Course.Control
 {
     [DisallowMultipleComponent]
-    public class CustomizationManager : MonoBehaviour, ISavable
+    public class CustomizationManager : MonoBehaviour, ISavable , ICustomization
     {
         [Header("All available parts")]
         public ShipPartSO[] bodyParts;    // indexes 0..N

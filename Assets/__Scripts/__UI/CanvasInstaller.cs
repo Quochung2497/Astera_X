@@ -28,7 +28,7 @@ namespace Course.UI
         [Inject]
         private IAchievementManager _achievementManager;
         [Inject] 
-        private CustomizationManager _manager;
+        private ICustomization _manager;
         [Inject] 
         private ILevel _level;
 

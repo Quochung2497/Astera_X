@@ -856,6 +856,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1487972784202249658, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: useJoyStick
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1719381144539029833, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_LocalPosition.x

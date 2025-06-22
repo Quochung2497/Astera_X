@@ -20,7 +20,7 @@ namespace Course.UI.Customization
         [Header("Turret Toggles")] [SerializeField]
         private TogglePart[] turretToggles;
 
-        [Inject] private CustomizationManager _customization;
+        [Inject] private ICustomization _customization;
         [Inject] private IAchievementManager _achievements;
         
         private bool _hasLoaded = false;

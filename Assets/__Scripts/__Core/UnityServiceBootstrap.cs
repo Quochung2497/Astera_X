@@ -31,7 +31,7 @@ namespace Course.Core
         [SerializeField] private UnityServicesConfig unityServicesConfig;
         
         [Inject] private IAchievementManager _achievementManager;
-        [Inject] private CustomizationManager _customization;
+        [Inject] private ICustomization _customization;
 
         public void RunAds()
         {

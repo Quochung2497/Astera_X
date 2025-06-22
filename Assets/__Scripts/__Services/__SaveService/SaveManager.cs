@@ -20,7 +20,7 @@ namespace Course.Services.SaveService
         // private EventBinding<GameStateChangedEvent> _preLevelBinding;
         
         [Inject]
-        private CustomizationManager _customizationManager;
+        private ICustomization _customizationManager;
         [Inject]
         private IAchievementManager _achievementManager;
 
