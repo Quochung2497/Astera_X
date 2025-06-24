@@ -152,6 +152,7 @@ MonoBehaviour:
   score: {fileID: 0}
   health: {fileID: 0}
   levelBehaviour: {fileID: 0}
+  purseBehaviour: {fileID: 0}
   manager: {fileID: 0}
   achievementManager: {fileID: 0}
   saveManager: {fileID: 0}
@@ -222,3 +223,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2fa2a7b47fdc4e4e8abf1112f41c833, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemToTest: {fileID: 11400000, guid: 5bbf36e815da3984cbd532e885390015, type: 2}
+  PremiumItemToTest: {fileID: 11400000, guid: caa3df07dfb280e41ba9527e590f3dc3, type: 2}

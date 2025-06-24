@@ -634,6 +634,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cfc95809034cd24ebbf583a25d77a5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1957896209 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6646845249360979751, guid: 2c350f2ea6d36435b8b50bf6e3c429cb,
+    type: 3}
+  m_PrefabInstance: {fileID: 2066196650}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 966363ff02e92884a874441cc63b6dd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1957896220 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 85312233272451158, guid: 2c350f2ea6d36435b8b50bf6e3c429cb,
+    type: 3}
+  m_PrefabInstance: {fileID: 2066196650}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b2c13736e90dd5408e49f7906f4cde2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2004735214
 GameObject:
   m_ObjectHideFlags: 0
@@ -859,7 +883,7 @@ PrefabInstance:
     - target: {fileID: 1487972784202249658, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: useJoyStick
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1719381144539029833, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
@@ -1009,7 +1033,7 @@ PrefabInstance:
     - target: {fileID: 3516301509112511973, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -12.2547
+      value: -12.254639
       objectReference: {fileID: 0}
     - target: {fileID: 3679550582179007196, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
@@ -1497,6 +1521,16 @@ PrefabInstance:
       objectReference: {fileID: 1542331296}
     - target: {fileID: 9026391602704415601, guid: 8c64eec13ebf02248980251137e887cb,
         type: 3}
+      propertyPath: shopManager
+      value: 
+      objectReference: {fileID: 1957896220}
+    - target: {fileID: 9026391602704415601, guid: 8c64eec13ebf02248980251137e887cb,
+        type: 3}
+      propertyPath: shopService
+      value: 
+      objectReference: {fileID: 1957896220}
+    - target: {fileID: 9026391602704415601, guid: 8c64eec13ebf02248980251137e887cb,
+        type: 3}
       propertyPath: statsProvider
       value: 
       objectReference: {fileID: 0}
@@ -1505,6 +1539,11 @@ PrefabInstance:
       propertyPath: levelBehaviour
       value: 
       objectReference: {fileID: 1299226215}
+    - target: {fileID: 9026391602704415601, guid: 8c64eec13ebf02248980251137e887cb,
+        type: 3}
+      propertyPath: purseBehaviour
+      value: 
+      objectReference: {fileID: 1957896209}
     - target: {fileID: 9026391602704415601, guid: 8c64eec13ebf02248980251137e887cb,
         type: 3}
       propertyPath: achievementManager

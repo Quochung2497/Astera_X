@@ -5,6 +5,7 @@ using Course.Control;
 using Course.Core;
 using Course.ScriptableObject;
 using Course.Services.Achievements;
+using Course.Services.Shop;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -22,7 +23,8 @@ namespace Course.UI.Customization
 
         [Inject] private ICustomization _customization;
         [Inject] private IAchievementManager _achievements;
-        
+        [Inject] private IShopService _shop;
+
         private bool _hasLoaded = false;
         private readonly HashSet<AchievementSO> _unlocked = new();
 
@@ -47,6 +49,7 @@ namespace Course.UI.Customization
                 return;
             _achievements.OnUnlocked += OnAchievementUnlocked;
             _customization.OnLoaded += OnCustomizationLoaded;
+
         }
 
         private void OnDestroy()
@@ -55,6 +58,8 @@ namespace Course.UI.Customization
                 return;
             _achievements.OnUnlocked -= OnAchievementUnlocked;
             _customization.OnLoaded -= OnCustomizationLoaded;
+            if (_shop == null) return;
+            _shop.OnPartPurchased   -= HandlePartPurchased;
         }
 
         private void OnCustomizationLoaded()
@@ -64,7 +69,7 @@ namespace Course.UI.Customization
             _customization.ApplyBody(_customization.SelectedBodyIndex);
             _customization.ApplyTurret(_customization.SelectedTurretIndex);
             _hasLoaded = true;
-
+            _shop.OnPartPurchased += HandlePartPurchased;
             // and then refresh the toggles
             InitializeUI();
         }
@@ -79,16 +84,16 @@ namespace Course.UI.Customization
         private void InitializeUI()
         {
             // 1) Enable/disable each toggle
-            foreach (var tp in bodyToggles)
+            foreach (var tp in bodyToggles.Concat(turretToggles))
             {
-                bool unlocked = tp.unlockRequirement == null || _unlocked.Contains(tp.unlockRequirement);
-                tp.toggle.interactable = unlocked;
-            }
+                bool byAch  = tp.unlockRequirement == null
+                              || _unlocked.Contains(tp.unlockRequirement);
 
-            foreach (var tp in turretToggles)
-            {
-                bool unlocked = tp.unlockRequirement == null || _unlocked.Contains(tp.unlockRequirement);
-                tp.toggle.interactable = unlocked;
+                bool byShop = _shop.PurchasedParts
+                    .Any(p => p.partType == tp.partType
+                              && p.Index    == tp.index);
+
+                tp.toggle.interactable = byAch || byShop;
             }
 
             // 2) Set each toggle’s isOn to match the current selection
@@ -107,6 +112,15 @@ namespace Course.UI.Customization
                 else
                     tp.toggle.SetIsOnWithoutNotify(false);
             }
+        }
+        
+        private void HandlePartPurchased(ShipPartSO part)
+        {
+            // enable the matching toggle
+            var toggles = part.partType == PartType.Body ? bodyToggles : turretToggles;
+            foreach (var tp in toggles)
+                if (tp.index == part.Index)
+                    tp.toggle.interactable = true;
         }
     }
     [Serializable]
