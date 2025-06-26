@@ -50,7 +50,13 @@ namespace Course.UI.Shop
             shopToggleButton.Initialize(() =>
             {
                 if (_gameManager == null || _shopService == null)
-                    return;
+                {
+                    Debug.LogError("[ShopToggleInstaller] Missing GameManager or ShopService!");
+                    if (_gameManager == null)
+                        Debug.LogError("GameManager instance is null.");
+                    if (_shopService == null)
+                        Debug.LogError("ShopService instance is null.");
+                }
 
                 // toggle game state
                 var newState = _gameManager.currentStates == GameState.level

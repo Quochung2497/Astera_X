@@ -1,4 +1,5 @@
-﻿using Course.ScriptableObject.Item;
+﻿using System.Collections;
+using Course.ScriptableObject.Item;
 using Course.Services.Shop;
 using TMPro;
 using UnityEngine;
@@ -15,7 +16,10 @@ namespace Course.UI.Shop
         [SerializeField] private TextMeshProUGUI totalCostText;
         [SerializeField] private Image            currencyIconImage;
         [SerializeField] private Button           buyButton;
+        [SerializeField] private TextMeshProUGUI buyButtonText;
         [SerializeField] private Button           cancelButton;
+        [SerializeField] private GameObject spinner;
+        [SerializeField] private float duration = 1f;
 
         [Header("Error Notification")]
         [SerializeField] private GameObject       failedPanel;
@@ -99,6 +103,7 @@ namespace Course.UI.Shop
             minusButton.interactable = canMinus;
             plusButton.interactable  = canPlus;
             buyButton.interactable   = !isSoldOut;
+            spinner.SetActive(false);
         }
 
         public void OnPlusClicked()
@@ -121,7 +126,7 @@ namespace Course.UI.Shop
             bool success = _shop.Buy(_item, _quantity);
             if (success)
             {
-                HideDetail();
+                StartCoroutine( ShowSpinner());
             }
             else
             {
@@ -143,6 +148,19 @@ namespace Course.UI.Shop
                 failedPanel.SetActive(!string.IsNullOrEmpty(message));
             if (failedText != null)
                 failedText.text = message ?? "";
+        }
+        
+        private IEnumerator ShowSpinner()
+        {
+            if (spinner != null)
+            {
+                buyButtonText.gameObject.SetActive(false);
+                spinner.SetActive(true);
+                yield return new WaitForSecondsRealtime(duration); // Simulate loading time
+                spinner.SetActive(false);
+                buyButtonText.gameObject.SetActive(true);
+                HideDetail();
+            }
         }
     }
 }
