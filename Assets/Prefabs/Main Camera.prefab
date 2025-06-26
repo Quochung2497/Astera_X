@@ -133,7 +133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb2bf52cd01b962429a8d5c17ff985f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  activeStates: 36
+  activeStates: 100
   activeObjects:
   - {fileID: 0}
   editorOnly: 0
@@ -152,11 +152,12 @@ MonoBehaviour:
   score: {fileID: 0}
   health: {fileID: 0}
   levelBehaviour: {fileID: 0}
-  purseBehaviour: {fileID: 0}
   manager: {fileID: 0}
   achievementManager: {fileID: 0}
   saveManager: {fileID: 0}
   customizationManager: {fileID: 0}
+  purseBehaviour: {fileID: 0}
+  shopManager: {fileID: 0}
 --- !u!114 &7099486719679587416
 MonoBehaviour:
   m_ObjectHideFlags: 0

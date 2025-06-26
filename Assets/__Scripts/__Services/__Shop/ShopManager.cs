@@ -33,12 +33,17 @@ namespace Course.Services.Shop
         
         public event Action OnShopUpdate;
 
+        public event Action OnShopLoaded;
+
         public IEnumerable<Item> AllItems => shopEntries.Select(e => e.item);
 
         public IEnumerable<ShopEntry> Entries => shopEntries;
 
         public int GetAvailableStock(Item item)
             => _shop.GetAvailableStock(item);
+        
+        public bool IsSoldOut(Item item)
+            => _shop.IsSoldOut(item);
 
         public bool CanBuy(Item item, int quantity = 1)
             => _shop.CanBuy(item, quantity);
@@ -71,7 +76,7 @@ namespace Course.Services.Shop
                 if (entryItem is PremiumItem pi)
                     _purchasedParts.Add(pi.PartToUnlock);
             }
-            OnShopUpdate?.Invoke();
+            OnShopLoaded?.Invoke();
         }
 
         async Task ISavable.Save(ISaveService svc)

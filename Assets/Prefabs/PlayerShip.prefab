@@ -311,8 +311,8 @@ MonoBehaviour:
     isStockable: 1
     quantity: 2
   - item: {fileID: 11400000, guid: caa3df07dfb280e41ba9527e590f3dc3, type: 2}
-    isStockable: 0
-    quantity: 0
+    isStockable: 1
+    quantity: 1
 --- !u!114 &6646845249360979751
 MonoBehaviour:
   m_ObjectHideFlags: 0

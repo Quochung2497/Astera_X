@@ -13,6 +13,12 @@ namespace Course.ScriptableObject.Item
         [Header("Visuals")]
         [field: SerializeField]
         public Sprite Icon { get; private set; }
+        [Tooltip("Name of the item, shown in the shop and inventory")]
+        [field: SerializeField] public String ItemName { get; private set; }
+        
+        [Tooltip("Description of the item, shown in the shop and inventory")]
+        [field: SerializeField] public string Description { get; private set; }
+        
         
         [Header("Pricing")]
         [Tooltip("Price in your chosen currency")]

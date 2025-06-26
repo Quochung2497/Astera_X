@@ -8,6 +8,7 @@ public enum GameState
      postLevel = 1 << 3,  // 8
      gameOver  = 1 << 4,  // 16
      paused    = 1 << 5,  // 32
+     shop        = 1 << 6,  // 64
 
      all = 0xFFFFFFF
 }

@@ -21,6 +21,8 @@ namespace Course.Services.Shop
         /// Returns how many of the given item are currently in stock (int.MaxValue if unlimited).
         /// </summary>
         int GetAvailableStock(Item item);
+        
+        bool IsSoldOut(Item item);
 
         /// <summary>
         /// Returns whether the player can buy the specified quantity of the item.
@@ -38,6 +40,8 @@ namespace Course.Services.Shop
         event Action<ShipPartSO> OnPartPurchased;
         
         event Action OnShopUpdate;
+
+        event Action OnShopLoaded;
         
         /// <summary> All parts the user has bought so far. </summary>
         IEnumerable<ShipPartSO> PurchasedParts { get; }

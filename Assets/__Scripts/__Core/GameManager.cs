@@ -78,6 +78,7 @@ namespace Course.Core
             {
                 case GameState.mainMenu:
                 case GameState.paused:
+                case GameState.shop: 
                     Time.timeScale = 0f;
                     break;
 

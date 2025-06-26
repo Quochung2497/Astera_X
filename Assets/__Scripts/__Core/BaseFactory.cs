@@ -28,6 +28,11 @@ namespace Course.Core
         {
             return _pool.Get();
         }
+
+        public void Release(T item)
+        {
+            _pool.Release(item);
+        }
     }
 }
 
