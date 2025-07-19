@@ -110,6 +110,15 @@ namespace Course.Input
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Temporary-Move"",
+                    ""type"": ""Button"",
+                    ""id"": ""bcb1eda1-547f-4b16-bf2f-b8f2f6c35ef3"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -236,17 +245,6 @@ namespace Course.Input
                 },
                 {
                     ""name"": """",
-                    ""id"": ""fff866cc-145d-4d33-813c-e6bbba692dfa"",
-                    ""path"": ""<Sensor>/{Tilt}"",
-                    ""interactions"": """",
-                    ""processors"": ""StickDeadzone"",
-                    ""groups"": """",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""32c4e075-e3b6-4e73-ae39-3273ba109748"",
                     ""path"": ""<Touchscreen>/Press"",
                     ""interactions"": """",
@@ -266,6 +264,72 @@ namespace Course.Input
                     ""action"": ""Shoot"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fff866cc-145d-4d33-813c-e6bbba692dfa"",
+                    ""path"": ""<Sensor>/{Tilt}"",
+                    ""interactions"": """",
+                    ""processors"": ""StickDeadzone"",
+                    ""groups"": """",
+                    ""action"": ""Temporary-Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""cc732836-2069-4a73-8055-47c5fd1053ed"",
+                    ""path"": ""2DVector(mode=2)"",
+                    ""interactions"": """",
+                    ""processors"": ""StickDeadzone"",
+                    ""groups"": """",
+                    ""action"": ""Temporary-Move"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""45e5fd6b-8d4d-440b-ad6d-161a186c6997"",
+                    ""path"": ""<Accelerometer>/acceleration/y"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Temporary-Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""869d4ef8-a706-4dbd-be5f-f9dd604d41f8"",
+                    ""path"": ""<Accelerometer>/acceleration/y"",
+                    ""interactions"": """",
+                    ""processors"": ""InvertVector2"",
+                    ""groups"": """",
+                    ""action"": ""Temporary-Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""16889245-464d-424a-9143-c8746ed31d8e"",
+                    ""path"": ""<Accelerometer>/acceleration/x"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Temporary-Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""e99ff35a-06d3-48ab-bebd-c6047a271b0f"",
+                    ""path"": ""<Accelerometer>/acceleration/x"",
+                    ""interactions"": """",
+                    ""processors"": ""InvertVector2"",
+                    ""groups"": """",
+                    ""action"": ""Temporary-Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         },
@@ -321,6 +385,7 @@ namespace Course.Input
             m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
             m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
             m_Player_Shoot = m_Player.FindAction("Shoot", throwIfNotFound: true);
+            m_Player_TemporaryMove = m_Player.FindAction("Temporary-Move", throwIfNotFound: true);
             // Turret
             m_Turret = asset.FindActionMap("Turret", throwIfNotFound: true);
             m_Turret_Aim = m_Turret.FindAction("Aim", throwIfNotFound: true);
@@ -407,6 +472,7 @@ namespace Course.Input
         private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
         private readonly InputAction m_Player_Move;
         private readonly InputAction m_Player_Shoot;
+        private readonly InputAction m_Player_TemporaryMove;
         /// <summary>
         /// Provides access to input actions defined in input action map "Player".
         /// </summary>
@@ -426,6 +492,10 @@ namespace Course.Input
             /// Provides access to the underlying input action "Player/Shoot".
             /// </summary>
             public InputAction @Shoot => m_Wrapper.m_Player_Shoot;
+            /// <summary>
+            /// Provides access to the underlying input action "Player/TemporaryMove".
+            /// </summary>
+            public InputAction @TemporaryMove => m_Wrapper.m_Player_TemporaryMove;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -458,6 +528,9 @@ namespace Course.Input
                 @Shoot.started += instance.OnShoot;
                 @Shoot.performed += instance.OnShoot;
                 @Shoot.canceled += instance.OnShoot;
+                @TemporaryMove.started += instance.OnTemporaryMove;
+                @TemporaryMove.performed += instance.OnTemporaryMove;
+                @TemporaryMove.canceled += instance.OnTemporaryMove;
             }
 
             /// <summary>
@@ -475,6 +548,9 @@ namespace Course.Input
                 @Shoot.started -= instance.OnShoot;
                 @Shoot.performed -= instance.OnShoot;
                 @Shoot.canceled -= instance.OnShoot;
+                @TemporaryMove.started -= instance.OnTemporaryMove;
+                @TemporaryMove.performed -= instance.OnTemporaryMove;
+                @TemporaryMove.canceled -= instance.OnTemporaryMove;
             }
 
             /// <summary>
@@ -638,6 +714,13 @@ namespace Course.Input
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnShoot(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Temporary-Move" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnTemporaryMove(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Turret" which allows adding and removing callbacks.

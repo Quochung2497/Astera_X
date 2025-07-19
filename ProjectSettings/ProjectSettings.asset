@@ -143,6 +143,7 @@ PlayerSettings:
   bundleVersion: 1.0
   preloadedAssets:
   - {fileID: -944628639613478452, guid: 363b57fe6832e054899b09b9287122ea, type: 3}
+  - {fileID: 11400000, guid: 7d3b09d3a7b6cd34c8ced3efec3d9476, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -927,8 +928,9 @@ PlayerSettings:
     Collab: 0
     ErrorHub: 0
     Hub: 0
+    Purchasing: 0
     UNet: 0
-    Unity Ads: 1
+    Unity Ads: 0
   luminIcon:
     m_Name: 
     m_ModelFolderPath: 
@@ -950,11 +952,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: 95fd74ac-1d06-4e6a-8af8-f28a21c11996
+  cloudProjectId: 6d13bdaf-2d31-4e52-9036-ce4f4e477921
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
   projectName: "AsteraX \u2013 Jeremy Bond"
-  organizationId: unity_93d84b08b6243baf1135
+  organizationId: quochung020497
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 1
   hmiLoadingImage: {fileID: 0}

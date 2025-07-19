@@ -27,8 +27,12 @@ namespace Course.Core
         private EventBinding<GameStateChangedEvent> _gameOverEvent;
         private IAdsService _adsService;
 
+        // TODO: Testing for now
+        private Vector2 _restingTilt;
+
         [SerializeField] private AsteroidsConfig asteroidsConfig;
         [SerializeField] private UnityServicesConfig unityServicesConfig;
+        [SerializeField] private InputReader inputReader;
         
         [Inject] private IAchievementManager _achievementManager;
         [Inject] private ICustomization _customization;
@@ -78,6 +82,12 @@ namespace Course.Core
             }
         }
 
+        // private void FixedUpdate()
+        // {
+        //     if(Accelerometer.current != null && Accelerometer.current.enabled)
+        //         PollAccelerometer();
+        // }
+
         private void OnEnable()
         {
             RegisterLevelEvents();
@@ -95,8 +105,15 @@ namespace Course.Core
             DeregisterGameOverEvents();
             DeregisterCustomizationEvents();
                         
-            // InputSystem.DisableDevice(Accelerometer.current);
-            // InputSystem.DisableDevice(Gyroscope.current);
+            InputSystem.DisableDevice(Accelerometer.current);
+            InputSystem.DisableDevice(Gyroscope.current);
+        }
+
+        private void Start()
+        {
+            // TODO: Testing for now
+            Vector3 a = Accelerometer.current?.acceleration.ReadValue() ?? Vector3.zero;
+            _restingTilt = new Vector2(a.x, a.y);
         }
 
         private void OnDestroy()
@@ -258,5 +275,48 @@ namespace Course.Core
         }
 
         #endregion
+        
+        public void PollAccelerometer()
+        {
+            // 1) read raw 3D accel
+            Vector3 a = Accelerometer.current?.acceleration.ReadValue() ?? Vector3.zero;
+
+            // 2) subtract your baseline resting tilt
+            Vector2 delta = new Vector2(a.x, a.y) - _restingTilt;
+
+            // 3) find the signed tilt angle around X–axis:
+            //    use Atan2(y,z) if you consider 'y' pointing 
+            //    up/down and 'z' forward/back in device space.
+            float tiltX = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
+            //    Now tiltX is –180…+180, zero when level.
+
+            // 4) clamp into ±90° so “over-tilt” just saturates
+            float tiltClamped = Mathf.Clamp(tiltX, -90f, +90f);
+
+            // 5) remap to –1…+1
+            float normY = tiltClamped / 90f;
+            
+            // normY *= 0.8f; // optional: scale down to 80% of full range
+
+            // 6) use your existing X mapping
+            float normX = delta.x; // or delta.x / maxTiltX
+
+            // 7) apply your deadzone/sensitivity
+            Vector2 raw = new Vector2(normX, normY);
+            Vector2 move = ApplyDeadzone(raw, 0.1f);
+
+            inputReader.FeedMove(move);
+        }
+        
+        private Vector2 ApplyDeadzone(Vector2 v, float minDead, float maxDead = 1f)
+        {
+            float m = v.magnitude;
+            if (m < minDead) return Vector2.zero;
+            if (m > maxDead) return v.normalized;
+
+            // remap [minDead…maxDead] → [0…1]
+            float t = (m - minDead) / (maxDead - minDead);
+            return v.normalized * t;
+        }
     }
 }

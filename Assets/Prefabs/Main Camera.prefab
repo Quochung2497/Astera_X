@@ -212,6 +212,7 @@ MonoBehaviour:
   asteroidsConfig: {fileID: 11400000, guid: 1122c0f3a74fd19428d5f189cbd23ce5, type: 2}
   unityServicesConfig: {fileID: 11400000, guid: bab9c2611a1dc644ea90094fe09642e6,
     type: 2}
+  inputReader: {fileID: 11400000, guid: 65d029c290d82b646b60d9bab52982f0, type: 2}
 --- !u!114 &965974792178988003
 MonoBehaviour:
   m_ObjectHideFlags: 0

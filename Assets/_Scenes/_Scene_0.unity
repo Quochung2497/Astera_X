@@ -215,18 +215,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 565055297414224169}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &140720025 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1724703788782793537, guid: 4444605443e0b014eb9c0f040ba10ac8,
-    type: 3}
-  m_PrefabInstance: {fileID: 565055297414224169}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 140720023}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 754c76a141bedf840984c29047c554a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &201343796
 GameObject:
   m_ObjectHideFlags: 0
@@ -840,14 +828,9 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 41822121680916757, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
-      propertyPath: activeObjects.Array.size
-      value: 1
+      propertyPath: activeStates
+      value: 101
       objectReference: {fileID: 0}
-    - target: {fileID: 41822121680916757, guid: 4444605443e0b014eb9c0f040ba10ac8,
-        type: 3}
-      propertyPath: 'activeObjects.Array.data[0]'
-      value: 
-      objectReference: {fileID: 140720023}
     - target: {fileID: 87600054224224411, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -921,12 +904,12 @@ PrefabInstance:
     - target: {fileID: 235376693505898167, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -7.6213074
+      value: -7.621338
       objectReference: {fileID: 0}
     - target: {fileID: 235376693505898167, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 11.027695
+      value: 11.02771
       objectReference: {fileID: 0}
     - target: {fileID: 261988679397525393, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
@@ -961,18 +944,13 @@ PrefabInstance:
     - target: {fileID: 296095923089735648, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 4.0696106
+      value: 4.06958
       objectReference: {fileID: 0}
     - target: {fileID: 321382295957819221, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0.000030517578
       objectReference: {fileID: 0}
-    - target: {fileID: 968622591011758975, guid: 4444605443e0b014eb9c0f040ba10ac8,
-        type: 3}
-      propertyPath: shopToggleButton
-      value: 
-      objectReference: {fileID: 140720025}
     - target: {fileID: 1487972784202249658, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: useJoyStick
@@ -1576,7 +1554,7 @@ PrefabInstance:
     - target: {fileID: 6521029312428692553, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.000045776367
+      value: 0.000061035156
       objectReference: {fileID: 0}
     - target: {fileID: 6565692019681378261, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
@@ -1893,6 +1871,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7669678337903623526, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 7744386466976458879, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_SizeDelta.x
@@ -1906,12 +1889,12 @@ PrefabInstance:
     - target: {fileID: 7744386466976458879, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0.000076293945
+      value: 0.00021136925
       objectReference: {fileID: 0}
     - target: {fileID: 7744386466976458879, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.000030517578
+      value: -0.00008634009
       objectReference: {fileID: 0}
     - target: {fileID: 7775456446892701595, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}

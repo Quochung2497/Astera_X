@@ -32,7 +32,7 @@ public class TestScript : MonoBehaviour
             bool ok = _shop.Buy(itemToTest, 1);
             Debug.Log($"Tried buying Potion: {(ok? "SUCCESS" : "FAIL")} | Remaining stock: {_shop.GetAvailableStock(itemToTest)}");
         }
-
+        
         // Press 2 to buy the Turbo unlock (IAP, one-time)
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
