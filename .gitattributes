@@ -1,0 +1,2 @@
+# Git hooks must use LF on Windows and Linux.
+/.githooks/* text eol=lf
