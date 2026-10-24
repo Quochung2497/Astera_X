@@ -6,6 +6,13 @@ on:
     branches: [master]
   # Allow a manual run from the Actions tab once this workflow exists on the default branch.
   workflow_dispatch:
+  # The tag release workflow reuses these checks and requests the verified build artifact.
+  workflow_call:
+    inputs:
+      upload-build:
+        description: Upload the verified WebGL build for the release workflow.
+        type: boolean
+        default: false
 
 # Validate source and build output with read-only repository permissions.
 permissions:
@@ -179,3 +186,16 @@ jobs:
           for payload in data framework.js wasm; do
             test -n "$(find build/WebGL/Build -type f -name "*.$payload.unityweb" -size +0c -print -quit)"
           done
+
+      # Ordinary PR/manual validation ends above; only the release caller requests this artifact.
+      - name: Upload verified WebGL build
+        if: inputs.upload-build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: webgl-build
+          path: build/WebGL
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+          # Permit rebuilding the same tag when rerunning the whole release workflow.
+          overwrite: true
