@@ -39,32 +39,49 @@ namespace Course.Core
 
         public void RunAds()
         {
+            if (_adsService?.IsInitialized != true)
+                return;
             _adsService.LoadInterstitial();
             _adsService.ShowInterstitial();
         }
 
         public void RunBanner()
         {
-            _adsService.LoadBanner("Rewarded_Android");
-            _adsService.ShowBanner("Rewarded_Android");
+            if (_adsService?.IsInitialized != true)
+                return;
+            _adsService.LoadBanner();
+            _adsService.ShowBanner();
         }
         
         #region Unity Life Cycle
 
         protected override async void Awake()
         {
+            base.Awake();
+            _adsService = new AdsService();
+            if (unityServicesConfig != null)
+                _adsService.Initialize(unityServicesConfig.GameId, unityServicesConfig.testMode);
+
             try
             {
-                base.Awake();
                 await UnityAnalytics.InitializeAsync();
-            
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[Analytics] Initialization failed; gameplay remains local: {e.Message}");
+            }
+
+            try
+            {
                 await UnityRemoteConfig.InitializeAsync();
                 UnityRemoteConfig.FetchCompleted += OnRemoteConfigFetched;
                 UnityRemoteConfig.FetchConfigs();
-            
-                _adsService = new AdsService();
-                _adsService.Initialize(unityServicesConfig.GameId, unityServicesConfig.testMode);
-            
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[RC] Initialization failed; keeping local spawn rules: {e.Message}");
+            }
+
                 // TODO: Uncomment the following lines if you want to enable accelerometer and gyroscope input
                 // if (Accelerometer.current == null)
                 //     InputSystem.AddDevice<Accelerometer>();
@@ -74,12 +91,6 @@ namespace Course.Core
                 // InputSystem.EnableDevice(Gyroscope.current);
                 // foreach (var d in InputSystem.devices)
                 //     Debug.Log($"Device: {d}");
-            }
-            catch (Exception e)
-            {
-                throw new Exception(
-                    $"Failed to initialize Unity Services: {e.Message}", e); 
-            }
         }
 
         // private void FixedUpdate()
@@ -105,8 +116,10 @@ namespace Course.Core
             DeregisterGameOverEvents();
             DeregisterCustomizationEvents();
                         
-            InputSystem.DisableDevice(Accelerometer.current);
-            InputSystem.DisableDevice(Gyroscope.current);
+            if (Accelerometer.current != null)
+                InputSystem.DisableDevice(Accelerometer.current);
+            if (Gyroscope.current != null)
+                InputSystem.DisableDevice(Gyroscope.current);
         }
 
         private void Start()
@@ -231,6 +244,8 @@ namespace Course.Core
 
         #endregion
 
+        // TODO: After gameplay is restored, report selected body/turret indices at game over
+        // instead of counting apply calls and flushing them at level/game-over transitions.
         #region ShipPartChoice
 
         private void RegisterCustomizationEvents()
@@ -256,18 +271,41 @@ namespace Course.Core
 
         private void OnRemoteConfigFetched(ConfigResponse resp)
         {
-            string json = RemoteConfigService.Instance.appConfig
-                .GetJson("levelSpawnRules");
+            if (asteroidsConfig == null || resp.requestOrigin == ConfigOrigin.Default)
+                return;
 
-            var wrapper = JsonUtility.FromJson<LevelSpawnRuleArrayWrapper>(
-                $"{{\"items\":{json}}}");
+            try
+            {
+                string json = RemoteConfigService.Instance.appConfig.GetJson("levelSpawnRules");
+                if (string.IsNullOrWhiteSpace(json))
+                    return;
 
-            // 3) overwrite your SO’s data
-            asteroidsConfig.SetLevelSpawnRules(wrapper.items);
+                var wrapper = JsonUtility.FromJson<LevelSpawnRuleArrayWrapper>($"{{\"items\":{json}}}");
+                if (wrapper?.items == null || wrapper.items.Length == 0)
+                    throw new ArgumentException("levelSpawnRules must contain at least one level.");
 
-            Debug.Log($"[RC] Applied {wrapper.items.Length} spawn‐rules from remote");
+                var levels = new HashSet<int>();
+                foreach (var level in wrapper.items)
+                {
+                    var rule = level.rule;
+                    if (level.levelNumber < 0 || !levels.Add(level.levelNumber) ||
+                        rule.parentSize < 1 || rule.childSize < 1 || rule.grandchildSize < 1 ||
+                        rule.parentCount < 0 || rule.childCount < 0 || rule.grandchildCount < 0 ||
+                        rule.parentHealth < 1 || rule.childHealth < 1 || rule.grandchildHealth < 1 ||
+                        rule.parentPoints < 0 || rule.childPoints < 0 || rule.grandchildPoints < 0 ||
+                        rule.parentDamage < 0 || rule.childDamage < 0 || rule.grandchildDamage < 0)
+                        throw new ArgumentException("levelSpawnRules contains invalid or duplicate level data.");
+                }
+
+                asteroidsConfig.SetLevelSpawnRules(wrapper.items);
+                Debug.Log($"[RC] Applied {wrapper.items.Length} spawn rules from {resp.requestOrigin}.");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[RC] Keeping local spawn rules: {e.Message}");
+            }
         }
-        
+
         [Serializable]
         private class LevelSpawnRuleArrayWrapper
         {

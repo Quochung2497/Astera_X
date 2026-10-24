@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe714cbd2a77d6a41bd7e69e09638ac7, type: 3}
+  m_Name: Default Turret
+  m_EditorClassIdentifier: Assembly-CSharp::Course.ScriptableObject.ShipPartSO
+  <partType>k__BackingField: 1
+  <Index>k__BackingField: 0
+  Prefab: {fileID: 712504709563627947, guid: 8e30bba7ea392274bb56e88c8ba8f11f, type: 3}
+  <Icon>k__BackingField: {fileID: 21300000, guid: f55781b6154cbb24fae4085f21c6446e,
+    type: 3}
+  <displayName>k__BackingField: Turret 0
+  <modifiers>k__BackingField: []

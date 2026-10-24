@@ -19,6 +19,9 @@ namespace Course.ScriptableObject
 
         private void OnEnable()
         {
+            if (string.IsNullOrWhiteSpace(EventTypeName))
+                return;
+
             // 1) Resolve the event type
             _eventType = Type.GetType(EventTypeName)
                       ?? AppDomain.CurrentDomain.GetAssemblies()

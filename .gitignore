@@ -63,7 +63,6 @@ sysinfo.txt
 *.unitypackage
 *.unitypackage.meta
 *.app
-*.asset
 
 # Crashlytics generated file
 crashlytics-build.properties
@@ -74,6 +73,13 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
-Assets/Textures & Materials/Space_Background.psd
-Assets/Textures & Materials/Space_Background.psd.meta
-*.png
+
+# Unity source assets (.asset, .png, .psd) and their .meta files must be versioned.
+
+# Task scratch directory.
+/[Tt][Mm][Pp]/
+
+# Imported TMP resources; restore via doc/SETUP.md.
+# Game font assets and licenses are retained in Assets/Fonts/.
+/[Aa]ssets/TextMesh Pro/
+/[Aa]ssets/TextMesh Pro.meta

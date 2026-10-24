@@ -70,6 +70,8 @@ namespace Course.Services.SaveService
 
         private IEnumerator Load()
         {
+            // Let component Start methods finish wiring their gameplay listeners first.
+            yield return null;
             var savables = FindObjectsOfType<MonoBehaviour>()
                 .OfType<ISavable>();
             foreach (var s in savables)
@@ -94,7 +96,6 @@ namespace Course.Services.SaveService
 
         private void Start()
         {
-            StartCoroutine(Load());
             _onCustomizationLoaded = () => {
                 _customizationManager.OnCustomizationChanged += HandleSave;
             };
@@ -103,6 +104,7 @@ namespace Course.Services.SaveService
             _achievementManager.OnHighScore += HandleHighScoreSave;
             _gameOverBinding = new EventBinding<GameStateChangedEvent>(OnGameStateChanged);
             EventBus<GameStateChangedEvent>.Register(_gameOverBinding);
+            StartCoroutine(Load());
         }
 
         private void OnDestroy()

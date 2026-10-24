@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Course.Utility.Events;
 using UnityEngine;
 using UnityEngine.Advertisements;
@@ -10,10 +10,15 @@ namespace Course.Services.Unity
         private bool _initialized;
         private readonly Dictionary<string, bool> _isLoaded = new();
 
-        // Default placement IDs; replace with your own as needed:
+#if UNITY_IOS
+        private const string InterstitialId = "Interstitial_iOS";
+        private const string RewardedId     = "Rewarded_iOS";
+        private const string BannerId       = "Banner_iOS";
+#else
         private const string InterstitialId = "Interstitial_Android";
         private const string RewardedId     = "Rewarded_Android";
         private const string BannerId       = "Banner_Android";
+#endif
 
         public bool IsInitialized => _initialized;
 
@@ -188,7 +193,7 @@ namespace Course.Services.Unity
         public void OnUnityAdsShowFailure(string placementId, UnityAdsShowError error, string message)
         {
             Debug.LogError($"[Ads] Failed to show '{placementId}': {error} - {message}");
-            // Optionally: attempt to reload
+            EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(GameState.level));
             _isLoaded[placementId] = false;
             Load(placementId);
         }

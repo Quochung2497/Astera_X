@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2217a5175ee4915afcb9e95e6542f25, type: 3}
+  m_Name: Premium Item 1
+  m_EditorClassIdentifier: Assembly-CSharp::Course.ScriptableObject.Item.PremiumItem
+  itemID: caa3df07dfb280e41ba9527e590f3dc3
+  <Icon>k__BackingField: {fileID: 21300000, guid: f55781b6154cbb24fae4085f21c6446e,
+    type: 3}
+  <ItemName>k__BackingField: Turret 3
+  <Description>k__BackingField: Unlock turret 3.
+  <Price>k__BackingField: 1
+  <IsOneTimePurchaseOnly>k__BackingField: 1
+  <IsStackable>k__BackingField: 0
+  <PartToUnlock>k__BackingField: {fileID: 11400000, guid: 4aecdf35f640f3641bc2f43cafe784f3,
+    type: 2}

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 896ab100cc1309b42a7f7a275c9cfdcc, type: 3}
+  m_Name: EAGLE EYES
+  m_EditorClassIdentifier: Assembly-CSharp::Course.ScriptableObject.CorrelatedEventConditionGuidSO
+  PersistProgress: 1
+  FirstChannel: {fileID: 11400000, guid: 63f5e7d8d49a6a140bd5b5e3f3051c9a, type: 2}
+  SecondChannel: {fileID: 11400000, guid: 6d1bea5212604074d92b9ddb91aaac6a, type: 2}
+  IdFieldName: BulletId
+  Mode: 1
+  RequiredCount: 100
