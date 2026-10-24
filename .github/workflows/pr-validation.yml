@@ -1,0 +1,181 @@
+name: PR Validation
+
+on:
+  # Validate PRs whose destination branch is master, including new commits added to an open PR.
+  pull_request:
+    branches: [master]
+  # Allow a manual run from the Actions tab once this workflow exists on the default branch.
+  workflow_dispatch:
+
+# Validate source and build output with read-only repository permissions.
+permissions:
+  contents: read
+
+# Keep the latest run for each PR (or branch for manual runs) and cancel an older unfinished run.
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: PR Validation
+    # Use a fixed GitHub-hosted Linux image for the native Unity installation.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      # For a PR, check out GitHub's proposed merge commit so the checks cover its result on master.
+      # Fetch the full history; each external action is pinned to an exact commit.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      # Fail on repository data errors before installing or starting Unity.
+      - name: Check conflict markers, metadata, GUIDs and JSON
+        run: |
+          python3 - <<'PY'
+          import json
+          import re
+          import subprocess
+          from pathlib import Path, PurePosixPath
+
+          # Python accepts NaN/Infinity by default; reject them because they are not valid JSON.
+          def invalid_constant(value):
+              raise ValueError(f'Invalid JSON constant: {value}')
+
+          # Validate the full tracked checkout; ignored TMP resources are imported from UGUI before the build.
+          files = set(subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')) - {''}
+          # Match opening/closing/diff3 conflict markers; separator-only lines also occur in licenses.
+          markers = re.compile(r'^(?:<{7,}(?:\s.*)?|>{7,}(?:\s.*)?|\|{7,}(?:\s.*)?)$')
+          # Collect all errors, record the owner of each GUID and track asset folder ancestors.
+          errors, guids, folders = [], {}, set()
+          for name in sorted(files):
+              data, text = Path(name).read_bytes(), ''
+              # Scan readable UTF-8 text (with or without a BOM); skip binary/non-UTF-8 marker scans.
+              if b'\0' not in data:
+                  try:
+                      text = data.decode('utf-8-sig')
+                  except UnicodeDecodeError:
+                      pass
+              # Report each conflict marker with its file path and line number.
+              for line_number, line in enumerate(text.splitlines(), 1):
+                  if markers.fullmatch(line):
+                      errors.append(f'{name}:{line_number}: unresolved conflict marker')
+              # Unity input actions and assembly definitions/references also contain JSON.
+              if Path(name).suffix.lower() in {'.json', '.inputactions', '.asmdef', '.asmref'}:
+                  try:
+                      json.loads(data.decode('utf-8-sig'), parse_constant=invalid_constant)
+                  except ValueError as error:
+                      errors.append(f'{name}: invalid JSON: {error}')
+              # Only files inside Assets require Unity metadata and asset GUID checks.
+              if not name.startswith('Assets/'):
+                  continue
+              # Every tracked asset folder needs its own .meta; the Assets root is excluded.
+              folders.update(str(p) for p in PurePosixPath(name).parents if str(p) not in {'.', 'Assets'})
+              # The matching .meta must be committed, not merely present on a developer's machine.
+              if not name.endswith('.meta'):
+                  if name + '.meta' not in files:
+                      errors.append(f'{name}: missing tracked .meta file')
+                  continue
+              # Each .meta must contain one 32-digit hexadecimal GUID, unique across tracked Assets.
+              # Compare GUIDs without case differences and include the other file in duplicate errors.
+              values = re.findall(r'^guid:[ \t]*(\S+)[ \t]*\r?$', text, re.MULTILINE)
+              if len(values) != 1 or not re.fullmatch(r'[0-9a-fA-F]{32}', values[0]):
+                  errors.append(f'{name}: expected exactly one valid GUID')
+              elif values[0].lower() in guids:
+                  errors.append(f'{name}: GUID also used by {guids[values[0].lower()]}')
+              else:
+                  guids[values[0].lower()] = name
+          # Check folder metadata after collecting all ancestors, then fail with all findings at once.
+          errors.extend(f'{folder}: missing tracked folder .meta file' for folder in sorted(folders) if folder + '.meta' not in files)
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          print(f'Repository checks passed: {len(files)} tracked files, {len(guids)} unique asset GUIDs.')
+          PY
+
+      # Add these repository secrets in Settings > Secrets and variables > Actions.
+      - name: Check Unity credentials
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          for setting in UNITY_EMAIL UNITY_PASSWORD; do
+            if [ -z "${!setting}" ]; then
+              echo "::error::Configure $setting in Settings > Secrets and variables > Actions. Fork PRs do not receive repository secrets."
+              exit 1
+            fi
+          done
+
+      # Reuse imported assets to speed up later runs; Unity still imports changed assets and compiles.
+      - name: Cache Unity imports
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: Library
+          # Separate caches by Unity version, build target and project files.
+          key: Library-6000.3.22f1-WebGL-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          # If no exact cache exists, start from an older cache with the same version/target.
+          restore-keys: |
+            Library-6000.3.22f1-WebGL-
+
+      # Install the required editor and WebGL module directly on the runner; reuse the installation cache.
+      - name: Install Unity 6000.3.22f1 and WebGL support
+        uses: buildalon/unity-setup@30fcbcb56c10ea5d64298e970d952b8d29bc268b # v2
+        with:
+          unity-version: 6000.3.22f1
+          build-targets: WebGL
+          # Pin Hub below 3.20: this action expects the legacy /opt/unityhub installation path.
+          hub-version: '3.19.5'
+          cache-installation: true
+
+      # Activate Personal through the licensing client using Unity account secrets.
+      # The action runs license cleanup in its post step after the job finishes.
+      - name: Activate Unity Personal license
+        uses: buildalon/activate-unity-license@e0d245d0787b7b9931b56ccbde3b508f6b70f1af # v2
+        with:
+          license: personal
+          username: ${{ secrets.UNITY_EMAIL }}
+          password: ${{ secrets.UNITY_PASSWORD }}
+
+      # Resolve packages and compile first so the bundled UGUI resource archive is available.
+      - name: Import project and resolve packages
+        run: |
+          xvfb-run --auto-servernum "$UNITY_EDITOR_PATH" \
+            -batchmode -nographics -quit \
+            -projectPath "$GITHUB_WORKSPACE" \
+            -buildTarget WebGL \
+            -logFile -
+
+      # Complete the native package import in its own Editor invocation before building.
+      - name: Import TMP Essential Resources
+        run: |
+          tmp_package=$(find "$GITHUB_WORKSPACE/Library/PackageCache" -type f \
+            -path '*/com.unity.ugui*/Package Resources/TMP Essential Resources.unitypackage' -print -quit)
+          if [ -z "$tmp_package" ]; then
+            echo "::error::The UGUI package did not provide TMP Essential Resources."
+            exit 1
+          fi
+          xvfb-run --auto-servernum "$UNITY_EDITOR_PATH" \
+            -batchmode -nographics -quit \
+            -projectPath "$GITHUB_WORKSPACE" \
+            -buildTarget WebGL \
+            -importPackage "$tmp_package" \
+            -logFile -
+          test -s "$GITHUB_WORKSPACE/Assets/TextMesh Pro/Resources/TMP Settings.asset"
+
+      # Build all enabled scenes; CiBuild exits with code 0 on success or 1 on failure.
+      - name: Build WebGL
+        run: |
+          xvfb-run --auto-servernum "$UNITY_EDITOR_PATH" \
+            -batchmode -nographics \
+            -projectPath "$GITHUB_WORKSPACE" \
+            -buildTarget WebGL \
+            -executeMethod AsteraX.Editor.CiBuild.BuildWebGL \
+            -customBuildPath "$GITHUB_WORKSPACE/build/WebGL" \
+            -logFile -
+
+      # Confirm that the entry page and all three Brotli/fallback payloads were produced.
+      - name: Verify build output
+        run: |
+          test -s build/WebGL/index.html
+          for payload in data framework.js wasm; do
+            test -n "$(find build/WebGL/Build -type f -name "*.$payload.unityweb" -size +0c -print -quit)"
+          done
