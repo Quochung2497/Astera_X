@@ -20,7 +20,6 @@ namespace Course.Core
         private int   _currentLevel;
         private int   _lastScore;
         private bool  _didHitHighThisSession;
-        private Dictionary<PartType, int> _partSelectionCounts = new();
 
         private EventBinding<LevelReached>         _levelEvent;
         private EventBinding<ScoreUpdated>         _scoreEvent;
@@ -105,7 +104,6 @@ namespace Course.Core
             RegisterScoreEvents();
             RegisterAchievementEvents();
             RegisterGameOverEvents();
-            RegisterCustomizationEvents();
         }
 
         private void OnDisable()
@@ -114,7 +112,6 @@ namespace Course.Core
             DeregisterScoreEvents();
             DeregisterAchievementEvents();
             DeregisterGameOverEvents();
-            DeregisterCustomizationEvents();
                         
             if (Accelerometer.current != null)
                 InputSystem.DisableDevice(Accelerometer.current);
@@ -153,17 +150,6 @@ namespace Course.Core
         {
             _currentLevel = e.LevelNumber;
             UnityAnalytics.LogLevelStart(e.LevelNumber);
-            
-            // Ship Part Choices
-            if (_currentLevel > 0 && _partSelectionCounts.Count > 0)
-            {
-                var dict = new Dictionary<string, object>();
-                foreach (var kv in _partSelectionCounts)
-                    dict[kv.Key.ToString()] = kv.Value;
-
-                UnityAnalytics.LogShipPartChoice(dict);
-                _partSelectionCounts.Clear();
-            }
         }
 
         #endregion
@@ -228,41 +214,9 @@ namespace Course.Core
 
             bool gotHigh = _achievementManager?.DidHitNewHighThisSession ?? false;
             UnityAnalytics.LogGameOver(_lastScore, _currentLevel, gotHigh);
-            
-            // Ship Part Choices
-            if (_partSelectionCounts.Count > 0)
-            {
-                var dict = new Dictionary<string, object>();
-                foreach (var kv in _partSelectionCounts)
-                    dict[kv.Key.ToString()] = kv.Value;
-
-                UnityAnalytics.LogShipPartChoice(dict);
-
-                _partSelectionCounts.Clear();
-            }
-        }
-
-        #endregion
-
-        // TODO: After gameplay is restored, report selected body/turret indices at game over
-        // instead of counting apply calls and flushing them at level/game-over transitions.
-        #region ShipPartChoice
-
-        private void RegisterCustomizationEvents()
-        {
-            _customization.OnApplyShipPart += HandleApplyShipPart;
-        }
-
-        private void DeregisterCustomizationEvents()
-        {
-            _customization.OnApplyShipPart -= HandleApplyShipPart;
-        }
-        
-        private void HandleApplyShipPart(PartType type, Transform _, ShipPartSO.StatModifier[] __)
-        {
-            if (!_partSelectionCounts.ContainsKey(type))
-                _partSelectionCounts[type] = 0;
-            _partSelectionCounts[type]++;
+            UnityAnalytics.LogShipPartChoice(
+                _customization.SelectedBodyIndex,
+                _customization.SelectedTurretIndex);
         }
 
         #endregion
