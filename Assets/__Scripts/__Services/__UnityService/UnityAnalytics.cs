@@ -68,11 +68,11 @@ namespace Course.Services.Unity
             });
         }
 
-        public static void LogShipPartChoice(Dictionary<string, object> partSelectionCounts)
+        public static void LogShipPartChoice(int bodyIndex, int turretIndex)
         {
             Record("ShipPartChoice", new Dictionary<string, object> {
-                { "Body", partSelectionCounts.TryGetValue("Body", out var body) ? (int)body : 0 },
-                { "Turret", partSelectionCounts.TryGetValue("Turret", out var turret) ? (int)turret : 0 }
+                { "Body", bodyIndex },
+                { "Turret", turretIndex }
             });
         }
 
