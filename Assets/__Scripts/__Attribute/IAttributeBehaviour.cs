@@ -13,7 +13,6 @@ namespace Course.Attribute
 
         void ChangeValue(float value);
 
-        void ResetValue();
     }    
 }
 

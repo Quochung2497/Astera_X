@@ -69,14 +69,6 @@ namespace Course.Attribute
             OnValueChanged?.Invoke();
         }
 
-        /// <summary>
-        /// Resets the current value of the score to the maximum value.
-        /// </summary>
-        public void ResetValue()
-        {
-            ChangeValue(MaxValue);
-        }
-        
         public void SetMaxValue(float maxValue)
         {
             MaxValue = maxValue;
