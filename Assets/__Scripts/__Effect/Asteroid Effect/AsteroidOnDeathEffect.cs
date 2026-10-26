@@ -12,10 +12,14 @@ namespace Course.Effect
         // Public
         public void Initialize(IHealthBehaviour health, Asteroid asteroid)
         {
+            if (_initialized) return;
+
             _asteroid ??= asteroid;
             base.Initialize(health);
-            _owner.OnDie += HandleOnTriggerEffect;
             _initialized = true;
+
+            if (isActiveAndEnabled)
+                _owner.OnDie += HandleOnTriggerEffect;
         }
 
         protected override void OnEnable()

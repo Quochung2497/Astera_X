@@ -8,7 +8,6 @@ using Course.Control.Player;
 using Course.Core;
 using Course.Utility.Events;
 using UnityEngine;
-using Debug = System.Diagnostics.Debug;
 
 public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 {
@@ -42,6 +41,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
     private List<Renderer> _renderersCache;
     private bool            _isJumping = false;
     private bool            _isInitialized = false;
+    private bool            _healthEventsBound;
     /// <summary>
     /// The amount of damage taken by the player ship when colliding with an asteroid.
     /// </summary>
@@ -64,9 +64,9 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
         _collider  = GetComponent<Collider>();
         _gameStateGameOverevent = new GameStateChangedEvent(GameState.gameOver);
 
-        _healthBehaviour.OnValueChanged += HandleOnHealthChanged;
-        _healthBehaviour.OnDie += HandleOnDeath;
         _isInitialized = true;
+        if (isActiveAndEnabled)
+            SubscribeHealthEvents();
     }
 
     #endregion
@@ -80,20 +80,32 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
     
     private void OnEnable()
     {
-        if (_healthBehaviour == null || !_isInitialized)
-            return;
-        Debug.Assert(_healthBehaviour != null, nameof(_healthBehaviour) + " != null");
-        _healthBehaviour.OnValueChanged += HandleOnHealthChanged;
-        _healthBehaviour.OnDie += HandleOnDeath;
+        SubscribeHealthEvents();
     }
 
     private void OnDisable()
     {
-        if (_healthBehaviour == null || !_isInitialized)
+        UnsubscribeHealthEvents();
+    }
+
+    private void SubscribeHealthEvents()
+    {
+        if (!_isInitialized || _healthEventsBound)
             return;
-        Debug.Assert(_healthBehaviour != null, nameof(_healthBehaviour) + " != null");
+
+        _healthBehaviour.OnValueChanged += HandleOnHealthChanged;
+        _healthBehaviour.OnDie += HandleOnDeath;
+        _healthEventsBound = true;
+    }
+
+    private void UnsubscribeHealthEvents()
+    {
+        if (!_healthEventsBound)
+            return;
+
         _healthBehaviour.OnValueChanged -= HandleOnHealthChanged;
         _healthBehaviour.OnDie -= HandleOnDeath;
+        _healthEventsBound = false;
     }
 
     private void HandleOnHealthChanged()
@@ -157,14 +169,20 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
     /// <param name="other">The collision data.</param>
     private void OnCollisionEnter(Collision other)
     {
-        if (!_isInitialized || _isJumping)
+        if (!_isInitialized)
             return;
 
         if (other.gameObject.layer == LayerNameProvider.GetLayer(LayerName.Asteroid))
         {
             var ast = other.gameObject.GetComponent<Asteroid>();
+            if (ast == null) return;
+
             _damage = ast.damage;
-            _healthBehaviour?.ChangeValue(-_damage);
+            if (!ast.TryDestroyFromPlayerCollision()) return;
+
+            // Finish the asteroid before Game Over can deactivate the asteroid group.
+            if (!_isJumping && !_healthBehaviour.IsDead)
+                _healthBehaviour.ChangeValue(-_damage);
         }
     }
 }
