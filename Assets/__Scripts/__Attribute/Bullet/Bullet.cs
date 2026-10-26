@@ -14,7 +14,8 @@ namespace Course.Attribute.Bullet
         // Cache
         private Rigidbody        _rb;
         private IObjectPool<Bullet> _pool;
-        private Vector3       _launchPosition;
+        private Collider _collider;
+        private bool _launched;
         private float _speed;
         private float _lifetime;
         private Guid _spawnGuid;
@@ -34,14 +35,16 @@ namespace Course.Attribute.Bullet
         }
         
         /// <summary>
-        /// Launches the bullet with the specified position and applies velocity.
+        /// Starts movement and lifetime after Initialize has supplied this shot's settings.
         /// </summary>
-        /// <param name="launchPosition">The position to launch the bullet from.</param>
-        public void Launch(Vector3 launchPosition)
+        /// <param name="launchDirection">The direction to fire.</param>
+        public void Launch(Vector3 launchDirection)
         {
-            _launchPosition = launchPosition;
-            if(_launchPosition != null)
-                _rb.linearVelocity = _launchPosition * _speed;
+            _spawnGuid = Guid.NewGuid();
+            _launched = true;
+            _rb.linearVelocity = launchDirection * _speed;
+            _collider.enabled = true;
+            _lifetimeCoroutine = StartCoroutine(SelfDestruct());
         }
 
         #endregion
@@ -62,7 +65,10 @@ namespace Course.Attribute.Bullet
         /// </summary>
         public void Reset()
         {
-            _rb.linearVelocity = Vector2.zero;
+            _launched = false;
+            _collider.enabled = false;
+            _rb.linearVelocity = Vector3.zero;
+            _rb.angularVelocity = Vector3.zero;
             if (_lifetimeCoroutine != null)
             {
                 StopCoroutine(_lifetimeCoroutine);
@@ -106,19 +112,18 @@ namespace Course.Attribute.Bullet
         private void Awake()
         {
             _rb = GetComponent<Rigidbody>();
+            _collider = GetComponent<Collider>();
             _wrapper = GetComponent<IOffScreenWrapper>();
+            Reset();
         }
 
         /// <summary>
-        /// Resets the bullet and starts the self-destruction coroutine when enabled.
+        /// Reserves a bullet; Launch starts its lifetime once configured.
         /// </summary>
         private void OnEnable()
         {
-            _spawnGuid = Guid.NewGuid();
-            _alreadyReleased   = false;
+            _alreadyReleased = false;
             _wrapper.OnWrap += HandleWrap;
-            Reset();
-            _lifetimeCoroutine = StartCoroutine(SelfDestruct());
         }
 
         /// <summary>
@@ -128,36 +133,38 @@ namespace Course.Attribute.Bullet
         {
             _wrapper.OnWrap -= HandleWrap;
             Reset();
-            StopAllCoroutines();
         }
         
         private void HandleWrap(GameObject go)
         {
-            if (go != gameObject) return;
+            if (go != gameObject || !_launched) return;
             EventBus<BulletWrapped>.Raise(new BulletWrapped(_spawnGuid));
         }
 
         /// <summary>
-        /// Handles collision events. Releases the bullet if it collides with an object layer as "Asteroid".
-        /// Add score if the collided object is an asteroid.
-        /// Score are added based on the asteroid's size.
+        /// A bullet owns its hit transaction so callback order cannot apply damage twice.
         /// </summary>
-        /// <param name="other">The collision data.</param>
         private void OnCollisionEnter(Collision other)
         {
-            if (other.gameObject.layer != LayerNameProvider.GetLayer(LayerName.Asteroid))
+            if (!_launched || other.gameObject.layer != LayerNameProvider.GetLayer(LayerName.Asteroid))
                 return;
-            if (_lifetimeCoroutine != null)
+
+            var asteroid = other.gameObject.GetComponent<Asteroid>();
+            if (asteroid == null) return;
+
+            try
             {
-                StopCoroutine(_lifetimeCoroutine);
-                _lifetimeCoroutine = null;
+                if (asteroid.TryHitByBullet(Damage))
+                {
+                    EventBus<AsteroidShot>.Raise(new AsteroidShot());
+                    EventBus<AsteroidHitByBullet>.Raise(new AsteroidHitByBullet(_spawnGuid));
+                }
             }
-            Release();
-            EventBus<AsteroidShot>.Raise(new AsteroidShot());
-            EventBus<AsteroidHitByBullet>
-                .Raise(new AsteroidHitByBullet(_spawnGuid));
+            finally
+            {
+                Release();
+            }
         }
-        
 
         #endregion
     }

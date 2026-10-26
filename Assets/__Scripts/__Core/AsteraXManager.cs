@@ -42,7 +42,7 @@ namespace Course.Core
         /// <summary>
         /// List of active asteroid objects in the game.
         /// </summary>
-        private List<Asteroid> _asteroids;
+        private readonly List<Asteroid> _asteroids = new List<Asteroid>();
 
         /// <summary>
         /// Minimum distance an asteroid must spawn away from the player's ship.
@@ -63,6 +63,7 @@ namespace Course.Core
         private GameManager _gameManager;
         
         private bool _isSpawning = false;
+        private bool _checkForLevelClear;
 
         #endregion
 
@@ -100,14 +101,8 @@ namespace Course.Core
         {
             if (asteroid == null || asteroid.gameObject == null)
                 return;
-            if (_asteroids.IndexOf(asteroid) != -1)
-            {
-                _asteroids.Remove(asteroid);
-                if (_asteroids.Count == 0 && _levelDriver != null)
-                {
-                    _levelDriver.LevelCleared();
-                }
-            }
+            if (_asteroids.Remove(asteroid) && _asteroids.Count == 0)
+                _checkForLevelClear = true;
         }
 
         /// <summary>
@@ -286,8 +281,25 @@ namespace Course.Core
         /// </summary>
         private void Start()
         {
-            _asteroids = new List<Asteroid>();
             _gameManager = GameManager.TryGetInstance();
+        }
+
+        private void LateUpdate()
+        {
+            if (!_checkForLevelClear) return;
+
+            // Pause and shop defer the pending check until gameplay resumes.
+            if (_gameManager != null
+                && (_gameManager.currentStates == GameState.paused
+                    || _gameManager.currentStates == GameState.shop))
+                return;
+
+            _checkForLevelClear = false;
+
+            // Let every collision in this frame finish, including a possible player death.
+            if (_asteroids.Count == 0 && _levelDriver != null
+                && _gameManager != null && _gameManager.currentStates == GameState.level)
+                _levelDriver.LevelCleared();
         }
 
         #endregion

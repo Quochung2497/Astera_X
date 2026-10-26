@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace Course.Attribute
 {
@@ -43,13 +42,15 @@ namespace Course.Attribute
 
         /// <summary>
         /// Changes the value of the jump attribute by the specified amount.
-        /// Triggers the OnValueChanged event and updates the "dead" state if the value drops to zero or below.
+        /// Treats remaining health below one as zero, then updates the dead state before notifying observers.
         /// </summary>
         /// <param name="change">The amount to change the value by.</param>
         public void ChangeValue(float change)
         {
+            if (_isDead) return;
+
             Value += change;
-            if(Value > MaxValue && MaxValue != 0)
+            if (Value > MaxValue && MaxValue != 0)
             {
                 Value = MaxValue;
             }
@@ -57,11 +58,9 @@ namespace Course.Attribute
             {
                 Value = 0;
             }
+
+            _isDead = Value <= 0;
             OnValueChanged?.Invoke();
-            if (Value <= 0 && !_isDead)
-            {
-                _isDead = true;
-            }
         }
 
         /// <summary>
@@ -93,6 +92,7 @@ namespace Course.Attribute
         {
             MaxValue = maxValue;
             Value = maxValue;
+            _isDead = Value <= 0;
             OnValueChanged?.Invoke();
         }
 

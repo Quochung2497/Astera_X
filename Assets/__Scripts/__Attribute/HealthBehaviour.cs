@@ -13,7 +13,7 @@ namespace Course.Attribute
         #region Constructor
 
         /// <summary>
-        /// Initializes the jump attribute if it has not been set.
+        /// Assigns the health model only on first initialization; later calls keep the same instance.
         /// </summary>
         /// <param name="damageable">The jump attribute to initialize.</param>
         public void Initialize(IDamageable damageable)
@@ -55,11 +55,13 @@ namespace Course.Attribute
 
         /// <summary>
         /// Changes the value of the jump attribute by the specified amount.
-        /// Triggers the OnValueChanged event and invokes the OnDie event if the attribute is in a "dead" state.
+        /// Raises OnDie only when this change transitions the health model to dead.
         /// </summary>
         /// <param name="value">The amount to change the value by.</param>
         public void ChangeValue(float value)
         {
+            if (_damageable.IsDead) return;
+
             _damageable.ChangeValue(value);
             if (IsDead)
                 OnDie?.Invoke();

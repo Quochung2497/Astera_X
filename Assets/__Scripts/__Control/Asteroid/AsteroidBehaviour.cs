@@ -25,7 +25,7 @@ namespace Course.Control.Asteroid
         readonly Func<Vector3, bool> _isOutOfBounds;
 
         /// <summary>
-        /// Callback action for handling asteroid collision events.
+        /// Reserved callback for asteroid collision handling.
         /// </summary>
         readonly Action<Attribute.Asteroid, Collision> _onHitCallback;
 
@@ -35,22 +35,22 @@ namespace Course.Control.Asteroid
 
           /// <summary>
         /// Initializes a new instance of the <see cref="AsteroidBehaviour"/> class.
-        /// Sets up the manager, setup callback, out-of-bounds checker, collision callback, and release callback.
+        /// Sets up the manager, setup callback, out-of-bounds checker and reserved collision callback.
         /// </summary>
         /// <param name="manager">The AsteraX manager instance.</param>
         /// <param name="setupCallback">Callback for setting up asteroid attributes.</param>
         /// <param name="isOutOfBoundsChecker">Function to check if a position is out of bounds.</param>
-        /// <param name="onHitCallback">Callback for handling asteroid collision events.</param>
+        /// <param name="onHitCallback">Reserved callback for asteroid collision handling.</param>
         public AsteroidBehaviour(IAsteraX manager,
             Action<Course.Attribute.Asteroid,int> setupCallback,
             Func<Vector3,bool> isOutOfBoundsChecker,
-            Action<Attribute.Asteroid, Collision>  onHitCallback
+            Action<Attribute.Asteroid, Collision> onHitCallback
             )
         {
             _manager = manager;
             _setup = setupCallback;
             _isOutOfBounds   = isOutOfBoundsChecker;
-            _onHitCallback   = onHitCallback;
+            _onHitCallback = onHitCallback;
         }
         
         public void SpawnDescendent(    
@@ -79,7 +79,6 @@ namespace Course.Control.Asteroid
                 frag.SetPointValue(childPoints); 
                 frag.SetDamageValue(childDamage);
                 _setup(frag, childHealth);  // calls Setup()
-                _manager.AddAsteroid(frag);  // ensure manager knows about this new child
 
                 frag.transform.localPosition = Random.onUnitSphere * 0.5f;
                 frag.transform.localRotation = Random.rotation;
@@ -140,13 +139,10 @@ namespace Course.Control.Asteroid
         }
 
         /// <summary>
-        /// Handles the logic when an asteroid is hit.
-        /// If the asteroid has children, reinitializes them and detaches them from the parent.
-        /// Delegates the release logic to the provided release callback.
+        /// Releases the direct children only after their parent's health reaches zero.
+        /// Grandchildren stay attached until their own parent dies.
         /// </summary>
-        /// <param name="self">The asteroid that was hit.</param>
-        /// <param name="collision">The collision data.</param>
-        public void OnHit(Attribute.Asteroid self, Collision collision)
+        public void OnDeath(Attribute.Asteroid self)
         {
             if (self.size > 1)
             {
@@ -157,7 +153,7 @@ namespace Course.Control.Asteroid
                         continue;
 
                     child.transform.SetParent(_manager.asteroidParent, worldPositionStays: true);
-                    child.InitAsteroid();    
+                    child.InitAsteroid();
                 }
             }
         }

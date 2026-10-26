@@ -1,5 +1,4 @@
-﻿using System;
-using Course.Control.Asteroid;
+﻿using Course.Control.Asteroid;
 using Course.Core;
 using Course.Effect;
 using Course.Utility;
@@ -27,8 +26,9 @@ namespace Course.Attribute
         private IDamageable _damageable;
         private AsteroidOnDeathEffect _asteroidOnDeathEffect;
         private int                 _scoreValue;
-        private const string BulletTag = "Bullet";
-        private const string PlayerTag = "Player";
+        private bool _isReleased;
+        private bool _isConfigured;
+        private bool _awardScoreOnDeath;
 
         #endregion
     
@@ -43,19 +43,17 @@ namespace Course.Attribute
         }
 
         /// <summary>
-        /// Resets the asteroid's state.
-        /// Enables the wrapper, sets the Rigidbody to non-kinematic, enables the collider, 
-        /// and resets the physics velocities to zero.
+        /// Keeps pooled or unconfigured asteroids out of physics until Setup.
         /// </summary>
         public void Reset()
         {
-            _wrapper.enabled = true;
+            _isConfigured = false;
+            _wrapper.enabled = false;
+            _collider.enabled = false;
             _rb.isKinematic = false;
-
-            _collider.enabled = true;
-            // Reset physics velocities
             _rb.linearVelocity = Vector3.zero;
             _rb.angularVelocity = Vector3.zero;
+            _rb.isKinematic = true;
         }
 
         /// <summary>
@@ -63,7 +61,12 @@ namespace Course.Attribute
         /// </summary>
         public void Release()
         {
+            if (_isReleased) return;
+            _isReleased = true;
+            _isConfigured = false;
+
             _pool.Release(this);
+            _asteraXManager.RemoveAsteroid(this);
         }
         
         #endregion
@@ -78,12 +81,14 @@ namespace Course.Attribute
             _asteraXManager = AsteraXManager.TryGetInstance();
             _health = health;
             _asteroidOnDeathEffect = asteroidOnDeathEffect;
+            _asteroidOnDeathEffect?.Initialize(_health, this);
             _asteroidBehaviour = new AsteroidBehaviour(
                 _asteraXManager, 
                 (frag, injectedHp) => frag.Setup(injectedHp),
-                pos  => ScreenBounds.TryGetInstance().OOB(pos),
+                pos => ScreenBounds.TryGetInstance().OOB(pos),
                 (self, coll) => self.OnHitInternal(coll)
             );
+            Reset();
         }
         
         /// <summary>
@@ -122,7 +127,7 @@ namespace Course.Attribute
 
         public void SetDamageValue(int amount)
         {
-            damage = Mathf.Max(0, amount);;
+            damage = Mathf.Max(0, amount);
         }
 
         /// <summary>
@@ -132,10 +137,13 @@ namespace Course.Attribute
         public void Setup(int hp)
         {
             if (!Application.isPlaying) return;
+            _awardScoreOnDeath = false;
             transform.localScale = Vector3.one * size * _asteraXManager.asteroidsSO.asteroidScale;
-            _damageable = new Damageable(Mathf.Max(1, hp));
+            if (_damageable == null)
+                _damageable = new Damageable(Mathf.Max(1, hp));
+            else
+                _damageable.SetMaxValue(Mathf.Max(1, hp));
             _health?.Initialize(_damageable);
-            _asteroidOnDeathEffect?.Initialize(_health,this);
             if (parentIsAsteroid)
             {
                 InitAsteroidChild();
@@ -144,6 +152,29 @@ namespace Course.Attribute
             {
                 InitAsteroid();
             }
+
+            _isConfigured = true;
+            _asteraXManager.AddAsteroid(this);
+        }
+
+        public bool TryHitByBullet(float amount)
+        {
+            if (!_isConfigured || _health.IsDead || amount <= 0)
+                return false;
+
+            _awardScoreOnDeath = true;
+            _health.ChangeValue(-amount);
+            return true;
+        }
+
+        public bool TryDestroyFromPlayerCollision()
+        {
+            if (!_isConfigured || _health.IsDead)
+                return false;
+
+            _awardScoreOnDeath = false;
+            _health.ChangeValue(-_health.Value);
+            return true;
         }
         
         #endregion
@@ -215,11 +246,21 @@ namespace Course.Attribute
         }
 
         /// <summary>
-        /// Handles internal logic when the asteroid is hit.
-        /// Currently, this method is empty and serves as a placeholder for future implementation.
+        /// Reserved hit hook; currently empty and not invoked by the behaviour.
         /// </summary>
         /// <param name="coll">The collision data.</param>
         private void OnHitInternal(Collision coll) {}
+
+        private void HandleDeath()
+        {
+            _collider.enabled = false;
+
+            // Detach living fragments before deactivating their parent.
+            _asteroidBehaviour.OnDeath(this);
+            if (_awardScoreOnDeath)
+                EventBus<AddScore>.Raise(new AddScore(_scoreValue));
+            Release();
+        }
 
         /// <summary>
         /// Determines whether the asteroid's parent is another asteroid.
@@ -231,56 +272,16 @@ namespace Course.Attribute
 
         #region Unity API
         
-        /// <summary>
-        /// Unity's OnEnable method, called when the object becomes enabled and active.
-        /// Adds the asteroid to the manager's tracking list.
-        /// </summary>
         private void OnEnable()
         {
-            _asteraXManager.AddAsteroid(this);
-            _health.OnDie += Release;
+            _isReleased = false;
+            _health.OnDie += HandleDeath;
         }
 
-        /// <summary>
-        /// Unity's OnDisable method, called when the object becomes disabled or inactive.
-        /// Resets the asteroid and removes it from the manager's tracking list.
-        /// </summary>
         private void OnDisable()
         {
             Reset();
-            _health.OnDie -= Release;
-        }
-
-        /// <summary>
-        /// Unity's OnCollisionEnter method, called when the collider enters a collision.
-        /// Handles collision logic, including bubbling up to the parent asteroid if applicable,
-        /// and processing hits from bullets or the player.
-        /// </summary>
-        /// <param name="coll">The collision data.</param>
-        private void OnCollisionEnter(Collision coll)
-        {
-            // Bubble up to parent if this is a child asteroid
-            if (transform.parent?.TryGetComponent<Asteroid>(out var parent) ?? false)
-            {
-                parent.OnCollisionEnter(coll);
-                return;
-            }
-
-            GameObject other = coll.gameObject;
-            if (other.CompareTag(BulletTag) || coll.transform.root.CompareTag(PlayerTag))
-            {
-                _asteroidBehaviour.OnHit(this, coll);
-                if (other.TryGetComponent<Bullet.Bullet>(out var bullet))
-                {
-                    EventBus<AddScore>.Raise(new AddScore(_scoreValue));
-                    _health.ChangeValue(bullet.Damage);                    
-                }
-                else
-                {
-                    _health.ChangeValue(-(_health.MaxValue)); 
-                }
-                _asteraXManager.RemoveAsteroid(this);
-            }
+            _health.OnDie -= HandleDeath;
         }
 
         #endregion
