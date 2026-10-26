@@ -67,14 +67,6 @@ namespace Course.Attribute
             OnValueChanged?.Invoke();
         }
 
-        /// <summary>
-        /// Resets the score value to its initial state.
-        /// </summary>
-        public void ResetValue()
-        {
-            _score.ResetValue();
-        }
-
         #endregion
 
         #region Unity Lifecycle Methods

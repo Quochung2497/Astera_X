@@ -73,17 +73,6 @@ namespace Course.Attribute
         }
 
         /// <summary>
-        /// Resets the value of the jump attribute to its maximum value.
-        /// Resets the "dead" state and triggers the OnValueChanged event.
-        /// </summary>
-        public void ResetValue()
-        {
-            Value = MaxValue;
-            _isDead = false;
-            OnValueChanged?.Invoke();
-        }
-
-        /// <summary>
         /// Gets a value indicating whether the jump attribute is in a "dead" state.
         /// </summary>
         public bool IsDead => _isDead;

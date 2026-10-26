@@ -11,7 +11,6 @@ namespace Course.Attribute
         float BaseValue { get; }
         void ChangeValue(float value);
         float Fraction();
-        void ResetValue();
         void SetMaxValue(float value);
     }       
 }
