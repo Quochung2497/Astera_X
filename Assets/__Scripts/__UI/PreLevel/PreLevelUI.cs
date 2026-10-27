@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Course.Core;
 using Course.Level;
@@ -28,27 +29,24 @@ namespace Course.UI
 
         private ILevel _levelController;
         private IAsteraX _asteraX;
+        private Action _onPresentationCompleted;
         private int _asteroidCount;
         private int _childCount;
         private int _grandchildCount;
         private bool _isInitialized;
 
         /// <summary>
-        /// Call this once *before* enabling the panel:
-        ///
-        ///   preUI.Initialize(levelController, levelNumber, parentCount, childCount, grandchildCount);
-        ///   preUI.gameObject.SetActive(true);
-        ///
-        /// This will store the data, then call UpdateUI() → so that when OnEnable() runs,
-        /// both text fields are already populated, and then the flip-Y animation begins.
+        /// Initializes display data and the callback invoked after the presentation completes.
         /// </summary>
         public void Initialize(
             ILevel levelController,
-            IAsteraX asteraX
+            IAsteraX asteraX,
+            Action onPresentationCompleted
         )
         {
             _asteraX = asteraX;
             _levelController  = levelController;
+            _onPresentationCompleted = onPresentationCompleted;
             UpdateUI();
             _levelController.OnPreLevel += UpdateUI;
             _isInitialized = true;
@@ -91,7 +89,7 @@ namespace Course.UI
         /// <summary>
         /// As soon as this GameObject (the pre-level panel) becomes active,
         /// kick off the flip-Y + fade + scale animation on both `levelPanel` and `infoLabel`.
-        /// Once that animation is done, call StartNextLevel() on the controller and hide ourselves.
+        /// Reports completion after the animation finishes.
         /// </summary>
         private void OnEnable()
         {
@@ -100,7 +98,7 @@ namespace Course.UI
                 Debug.LogWarning("[PreLevelUI] One or both TextMeshProUGUI references are missing!");
                 return;
             }
-            StartCoroutine(FlipY_AnimateThenBeginLevel());
+            StartCoroutine(PlayPresentation());
         }
 
         private void OnDestroy()
@@ -111,9 +109,9 @@ namespace Course.UI
 
         /// <summary>
         /// Plays a synchronized flip-Y + fade + scale animation over `animationDuration`
-        /// on both text fields. When finished, invokes StartNextLevel() and disables this panel.
+        /// on both text fields, then invokes the presentation completion callback.
         /// </summary>
-        private IEnumerator FlipY_AnimateThenBeginLevel()
+        private IEnumerator PlayPresentation()
         {
             TextMeshProUGUI[] texts = new TextMeshProUGUI[] { levelPanel, infoLabel };
             foreach (var txt in texts)
@@ -167,7 +165,7 @@ namespace Course.UI
                 txt.rectTransform.localEulerAngles = new Vector3(90f, 0f, 0f);
             }
 
-            _levelController?.StartNextLevel();
+            _onPresentationCompleted?.Invoke();
         }
     }
 }
