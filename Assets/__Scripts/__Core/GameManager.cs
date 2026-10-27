@@ -1,6 +1,7 @@
 using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Course.Core
 {
@@ -23,6 +24,15 @@ namespace Course.Core
         /// Event binding for handling game state changes.
         /// </summary>
         private EventBinding<GameStateChangedEvent> _onGameStateChanged;
+
+        #endregion
+
+        #region Public Methods
+
+        public void RestartGame()
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
+        }
 
         #endregion
 

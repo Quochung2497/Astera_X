@@ -1,10 +1,10 @@
+using System;
 using System.Collections;
 using Course.Attribute;
 using Course.Level;
 using Course.Services.Achievements;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Utility.DependencyInjection;
 
 namespace Course.UI
@@ -62,6 +62,7 @@ namespace Course.UI
         /// Stores the final level value.
         /// </summary>
         private ILevel _level;
+        private Action _onPresentationCompleted;
         
         // Fractions of reloadDelay to spend in each phase
         private const float EFFECT_PHASE   = 0.3f;
@@ -71,16 +72,20 @@ namespace Course.UI
         #region Public Method
 
         /// <summary>
-        /// Initializes the GameOverUI with the specified score attribute and level.
-        /// Subscribes to the OnValueChanged event and updates the UI.
+        /// Initializes result data and the callback invoked after the presentation completes.
         /// </summary>
         /// <param name="score">The score attribute behavior to bind to the UI.</param>
         /// <param name="level">The final level value to display.</param>
-        public void Initialize(IAttributeBehaviour score, ILevel level, IAchievementManager achievementManager)
+        public void Initialize(
+            IAttributeBehaviour score,
+            ILevel level,
+            IAchievementManager achievementManager,
+            Action onPresentationCompleted)
         {
             _score ??= score;
             _level ??= level;
             _achievementManager ??= achievementManager;
+            _onPresentationCompleted = onPresentationCompleted;
         }
 
         #endregion
@@ -115,12 +120,10 @@ namespace Course.UI
         }
 
         /// <summary>
-        /// Coroutine that handles the reload process after a delay.
-        /// Fades the screen, toggles the active state of UI elements, waits for the specified delay, 
-        /// and reloads the current scene.
+        /// Fades the screen, presents the results and waits before reporting completion.
         /// </summary>
         /// <returns>An IEnumerator for the coroutine.</returns>
-        private IEnumerator ReloadAfterDelay()
+        private IEnumerator PlayPresentation()
         {
             OnActive(false);
             yield return fadeCanvas.FadeScreen(true, reloadDelay / 2, 1f);
@@ -132,7 +135,7 @@ namespace Course.UI
             
             yield return new WaitForSeconds(reloadDelay);
     
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
+            _onPresentationCompleted?.Invoke();
         }
         
         private IEnumerator AnimateTextEffects(TextMeshProUGUI[] objs, float duration)
@@ -189,11 +192,11 @@ namespace Course.UI
 
         /// <summary>
         /// Unity's OnEnable method, called when the GameObject becomes active.
-        /// Updates the UI and starts the reload coroutine.
+        /// Starts the result presentation coroutine.
         /// </summary>
         void OnEnable()
         {
-            StartCoroutine(ReloadAfterDelay());
+            StartCoroutine(PlayPresentation());
         }
 
         #endregion

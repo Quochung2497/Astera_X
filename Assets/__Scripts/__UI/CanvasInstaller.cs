@@ -39,7 +39,9 @@ namespace Course.UI
         {
             scoreUI.Initialize(_scoreBehaviour,_manager);
             jumpUI.Initialize(_healthBehaviour,_manager);
-            gameOverUI.Initialize(_scoreBehaviour, _level, _achievementManager);
+            gameOverUI.Initialize(
+                _scoreBehaviour, _level, _achievementManager,
+                GameManager.TryGetInstance().RestartGame);
             mainMenuButton.Initialize(() =>
             {
                 EventBus<GameStateChangedEvent>.Raise(

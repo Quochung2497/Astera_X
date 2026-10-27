@@ -23,7 +23,7 @@ namespace Course.UI
 
         public void StartInitialize()
         {
-            preLevelUI.Initialize(_level,_asteraX);
+            preLevelUI.Initialize(_level,_asteraX,_level.StartNextLevel);
         }
 
         private void Awake()
