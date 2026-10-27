@@ -34,23 +34,9 @@ namespace Course.Core
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
         }
 
-        public void TogglePause()
-        {
-            GameState nextState;
-            switch (currentStates)
-            {
-                case GameState.level:
-                    nextState = GameState.paused;
-                    break;
-                case GameState.paused:
-                    nextState = GameState.level;
-                    break;
-                default:
-                    return;
-            }
+        public void TogglePause() => ToggleBetween(GameState.level, GameState.paused);
 
-            EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(nextState));
-        }
+        public void ToggleShop() => ToggleBetween(GameState.level, GameState.shop);
 
         #endregion
 
@@ -94,6 +80,19 @@ namespace Course.Core
         #endregion
 
         #region Private Methods
+
+        private void ToggleBetween(GameState first, GameState second)
+        {
+            GameState nextState;
+            if (currentStates == first)
+                nextState = second;
+            else if (currentStates == second)
+                nextState = first;
+            else
+                return;
+
+            EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(nextState));
+        }
 
         /// <summary>
         /// Sets the current game state and performs actions based on the new state.

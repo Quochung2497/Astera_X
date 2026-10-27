@@ -161,7 +161,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2151164948615347532
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3302,6 +3302,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4737847414822813965}
   - component: {fileID: 7448736721425496706}
+  - component: {fileID: 7857931287409920146}
   m_Layer: 0
   m_Name: ShopSection
   m_TagString: Untagged
@@ -3932,3 +3933,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShowMaskGraphic: 0
+--- !u!114 &7857931287409920146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6828367342890998944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb2bf52cd01b962429a8d5c17ff985f0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  activeStates: 64
+  activeObjects:
+  - {fileID: 126599336540725361}
+  editorOnly: 0
