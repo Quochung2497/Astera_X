@@ -1,6 +1,5 @@
 using Course.Core;
 using Course.UI;
-using Course.Utility.Events;
 using UnityEngine;
 
 namespace Course.Installation
@@ -18,16 +17,8 @@ namespace Course.Installation
         public void StartInitialize()
         {
             _gameManager = GameManager.TryGetInstance();
-            pauseButton?.Initialize(() =>
-            {
-                if (_gameManager == null) return; 
-                GameState newState = (_gameManager.currentStates == GameState.level)
-                    ? GameState.paused
-                    : GameState.level;
-                EventBus<GameStateChangedEvent>.Raise(
-                    new GameStateChangedEvent(newState)
-                );
-            });
+            if (_gameManager == null) return;
+            pauseButton?.Initialize(_gameManager.TogglePause);
         }
 
         private void Start()

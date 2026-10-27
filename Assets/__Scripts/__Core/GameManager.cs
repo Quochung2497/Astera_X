@@ -34,6 +34,24 @@ namespace Course.Core
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
         }
 
+        public void TogglePause()
+        {
+            GameState nextState;
+            switch (currentStates)
+            {
+                case GameState.level:
+                    nextState = GameState.paused;
+                    break;
+                case GameState.paused:
+                    nextState = GameState.level;
+                    break;
+                default:
+                    return;
+            }
+
+            EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(nextState));
+        }
+
         #endregion
 
         #region Unity API

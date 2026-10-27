@@ -689,14 +689,14 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2004735214}
   m_Enabled: 1
-  serializedVersion: 11
+  serializedVersion: 12
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
-  m_CookieSize: 10
+  m_CookieSize2D: {x: 10, y: 10}
   m_Shadows:
     m_Type: 2
     m_Resolution: -1
@@ -951,6 +951,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: 0.000030517578
       objectReference: {fileID: 0}
+    - target: {fileID: 566396888185562167, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_ScreenMatchMode
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1487972784202249658, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: useJoyStick
@@ -1091,6 +1096,11 @@ PrefabInstance:
       propertyPath: m_Size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2721426783139814658, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_Value
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2782697252957665479, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: activeObjects.Array.size
@@ -1165,6 +1175,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3631193536436740744, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3631193536436740744, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3679550582179007196, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
@@ -1435,6 +1455,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5497279302607591817, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 49.6
       objectReference: {fileID: 0}
     - target: {fileID: 5683356894355625719, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
@@ -1969,7 +1994,7 @@ PrefabInstance:
     - target: {fileID: 8519071024555308747, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_fontSize
-      value: 45.05
+      value: 40.2
       objectReference: {fileID: 0}
     - target: {fileID: 8774448717708032406, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
