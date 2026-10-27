@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.IO;
 using TMPro;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -44,6 +45,14 @@ namespace AsteraX.Editor
                 if (report.summary.result != BuildResult.Succeeded)
                     throw new InvalidOperationException(
                         $"WebGL build failed: {report.summary.result}, {report.summary.totalErrors} errors.");
+
+                // Persist local JSON saves when the browser page is reloaded.
+                var indexPath = Path.Combine(arguments[pathIndex + 1], "index.html");
+                var indexHtml = File.ReadAllText(indexPath);
+                const string autoSyncOption = "// config.autoSyncPersistentDataPath = true;";
+                if (!indexHtml.Contains(autoSyncOption))
+                    throw new InvalidOperationException("WebGL template is missing the native persistent-data autosync option.");
+                File.WriteAllText(indexPath, indexHtml.Replace(autoSyncOption, "config.autoSyncPersistentDataPath = true;"));
 
                 Debug.Log("CI WebGL build succeeded.");
                 EditorApplication.Exit(0);
