@@ -2,7 +2,6 @@
 using Course.Core;
 using Course.ObjectPool;
 using Course.Services.Shop;
-using Course.Utility.Events;
 using UnityEngine;
 using UnityEngine.Pool;
 using Utility.DependencyInjection;
@@ -45,32 +44,13 @@ namespace Course.UI.Shop
                 Debug.LogError("[ShopToggleInstaller] Missing references!");
                 return;
             }
-            shopUI.gameObject.SetActive(false);
-
-            shopToggleButton.Initialize(() =>
+            if (_gameManager == null || _shopService == null)
             {
-                if (_gameManager == null || _shopService == null)
-                {
-                    Debug.LogError("[ShopToggleInstaller] Missing GameManager or ShopService!");
-                    if (_gameManager == null)
-                        Debug.LogError("GameManager instance is null.");
-                    if (_shopService == null)
-                        Debug.LogError("ShopService instance is null.");
-                }
+                Debug.LogError("[ShopToggleInstaller] Missing GameManager or ShopService!");
+                return;
+            }
 
-                // toggle game state
-                var newState = _gameManager.currentStates == GameState.level
-                    ? GameState.shop
-                    : GameState.level;
-
-                EventBus<GameStateChangedEvent>.Raise(
-                    new GameStateChangedEvent(newState)
-                );
-
-                // toggle shop UI
-                bool isNowOpen = !shopUI.gameObject.activeSelf;
-                shopUI.gameObject.SetActive(isNowOpen);
-            });
+            shopToggleButton.Initialize(_gameManager.ToggleShop);
         }
 
         private void Awake()
