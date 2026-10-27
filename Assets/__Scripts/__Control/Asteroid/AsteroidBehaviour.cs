@@ -1,4 +1,5 @@
 using System;
+using Course.Attribute;
 using Course.Core;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -17,7 +18,7 @@ namespace Course.Control.Asteroid
         /// <summary>
         /// Callback action for setting up an asteroid's attributes.
         /// </summary>
-        private readonly Action<Course.Attribute.Asteroid,int> _setup;
+        private readonly Action<IAsteroid,int> _setup;
 
         /// <summary>
         /// Function to check if a given position is out of bounds.
@@ -27,7 +28,7 @@ namespace Course.Control.Asteroid
         /// <summary>
         /// Reserved callback for asteroid collision handling.
         /// </summary>
-        readonly Action<Attribute.Asteroid, Collision> _onHitCallback;
+        readonly Action<IAsteroid, Collision> _onHitCallback;
 
         #endregion
 
@@ -42,9 +43,9 @@ namespace Course.Control.Asteroid
         /// <param name="isOutOfBoundsChecker">Function to check if a position is out of bounds.</param>
         /// <param name="onHitCallback">Reserved callback for asteroid collision handling.</param>
         public AsteroidBehaviour(IAsteraX manager,
-            Action<Course.Attribute.Asteroid,int> setupCallback,
+            Action<IAsteroid,int> setupCallback,
             Func<Vector3,bool> isOutOfBoundsChecker,
-            Action<Attribute.Asteroid, Collision> onHitCallback
+            Action<IAsteroid, Collision> onHitCallback
             )
         {
             _manager = manager;
@@ -74,7 +75,7 @@ namespace Course.Control.Asteroid
             for (int i = 0; i < childCount; i++)
             {
                 var frag = _manager.GetRandomAsteroidFromPool(childSize);
-                frag.name = $"{parentName}_{i:00}";
+                frag.gameObject.name = $"{parentName}_{i:00}";
                 frag.transform.SetParent(parentTransform, worldPositionStays: false);
                 frag.SetPointValue(childPoints); 
                 frag.SetDamageValue(childDamage);
@@ -96,7 +97,7 @@ namespace Course.Control.Asteroid
                       0,
                       0,
                     frag.transform,
-                    frag.name
+                    frag.gameObject.name
                     );
             }
         }
@@ -142,11 +143,11 @@ namespace Course.Control.Asteroid
         /// Releases the direct children only after their parent's health reaches zero.
         /// Grandchildren stay attached until their own parent dies.
         /// </summary>
-        public void OnDeath(Attribute.Asteroid self)
+        public void OnDeath(IAsteroid self)
         {
             if (self.size > 1)
             {
-                var children = self.GetComponentsInChildren<Attribute.Asteroid>();
+                var children = self.gameObject.GetComponentsInChildren<IAsteroid>();
                 foreach (var child in children)
                 {
                     if (child == self || child.transform.parent != self.transform)

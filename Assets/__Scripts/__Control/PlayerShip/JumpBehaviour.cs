@@ -174,7 +174,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 
         if (other.gameObject.layer == LayerNameProvider.GetLayer(LayerName.Asteroid))
         {
-            var ast = other.gameObject.GetComponent<Asteroid>();
+            var ast = other.gameObject.GetComponent<IAsteroid>();
             if (ast == null) return;
 
             _damage = ast.damage;

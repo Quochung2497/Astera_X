@@ -7,10 +7,10 @@ namespace Course.Effect
     public class AsteroidOnDeathEffect : OnTriggerEffect<IHealthBehaviour>
     {
         // Private Fields
-        private Asteroid _asteroid;
+        private IAsteroid _asteroid;
 
         // Public
-        public void Initialize(IHealthBehaviour health, Asteroid asteroid)
+        public void Initialize(IHealthBehaviour health, IAsteroid asteroid)
         {
             if (_initialized) return;
 
@@ -39,7 +39,8 @@ namespace Course.Effect
 
         protected override void HandleOnTriggerEffect()
         {
-            if (particlesEffectContainer == null || _asteroid == null)
+            if (particlesEffectContainer == null || _asteroid == null
+                || (_asteroid is Object unityObject && unityObject == null))
                 return;
 
             float scaleFactor = GetScaleFactor();
