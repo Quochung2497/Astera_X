@@ -102,6 +102,7 @@ namespace Course.Services.SaveService
             _customizationManager.OnLoaded += _onCustomizationLoaded;
             _achievementManager.OnUnlocked += HandleSaveOnUnlock;
             _achievementManager.OnHighScore += HandleHighScoreSave;
+            // TODO: Save successful shop purchases in a later refactor.
             _gameOverBinding = new EventBinding<GameStateChangedEvent>(OnGameStateChanged);
             EventBus<GameStateChangedEvent>.Register(_gameOverBinding);
             StartCoroutine(Load());
