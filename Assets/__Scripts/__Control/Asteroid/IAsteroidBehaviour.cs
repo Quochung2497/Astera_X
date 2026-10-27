@@ -1,3 +1,4 @@
+using Course.Attribute;
 using UnityEngine;
 
 namespace Course.Control.Asteroid
@@ -20,7 +21,7 @@ namespace Course.Control.Asteroid
             Transform parentTransform,
             string parentName);
         VelocityInfo CalculateInitialVelocity(Vector3 currentPosition, int size);
-        void OnDeath(Attribute.Asteroid self);
+        void OnDeath(IAsteroid self);
     }
 }
 

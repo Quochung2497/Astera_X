@@ -42,7 +42,7 @@ namespace Course.Core
         /// <summary>
         /// List of active asteroid objects in the game.
         /// </summary>
-        private readonly List<Asteroid> _asteroids = new List<Asteroid>();
+        private readonly List<IAsteroid> _asteroids = new List<IAsteroid>();
 
         /// <summary>
         /// Minimum distance an asteroid must spawn away from the player's ship.
@@ -73,10 +73,10 @@ namespace Course.Core
         /// Retrieves a random asteroid from the pool.
         /// </summary>
         /// <returns>A random asteroid instance.</returns>
-        public Asteroid GetRandomAsteroidFromPool(int size)
+        public IAsteroid GetRandomAsteroidFromPool(int size)
         {
             var idx = Random.Range(0, _pools.Count);
-            Asteroid ast = _pools[idx].Get();
+            IAsteroid ast = _pools[idx].Get();
             ast.SetSize(size);
             return ast;
         }
@@ -85,7 +85,7 @@ namespace Course.Core
         /// Adds an asteroid to the active asteroid list if it is not already present.
         /// </summary>
         /// <param name="asteroid">The asteroid to add.</param>
-        public void AddAsteroid(Asteroid asteroid)
+        public void AddAsteroid(IAsteroid asteroid)
         {
             if (_asteroids.IndexOf(asteroid) == -1)
             {
@@ -97,9 +97,11 @@ namespace Course.Core
         /// Removes an asteroid from the active asteroid list if it is present.
         /// </summary>
         /// <param name="asteroid">The asteroid to remove.</param>
-        public void RemoveAsteroid(Asteroid asteroid)
+        public void RemoveAsteroid(IAsteroid asteroid)
         {
-            if (asteroid == null || asteroid.gameObject == null)
+            if (asteroid == null
+                || (asteroid is Object unityObject && unityObject == null)
+                || asteroid.gameObject == null)
                 return;
             if (_asteroids.Remove(asteroid) && _asteroids.Count == 0)
                 _checkForLevelClear = true;
@@ -203,7 +205,7 @@ namespace Course.Core
         {
    
             // a) Acquire one parent of size rule.parentSize
-            Asteroid parent = GetRandomAsteroidFromPool(rule.parentSize);
+            IAsteroid parent = GetRandomAsteroidFromPool(rule.parentSize);
             parent.SetPointValue(rule.parentPoints);
             parent.SetDamageValue(rule.parentDamage);
 

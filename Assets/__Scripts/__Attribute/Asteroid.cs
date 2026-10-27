@@ -71,7 +71,7 @@ namespace Course.Attribute
         
         #endregion
 
-        #region IAsteroid Implementation
+        #region Initialization
 
         public void Initialize(OffScreenWrapper wrapper, IHealthBehaviour health, AsteroidOnDeathEffect asteroidOnDeathEffect)
         {
@@ -86,11 +86,15 @@ namespace Course.Attribute
                 _asteraXManager, 
                 (frag, injectedHp) => frag.Setup(injectedHp),
                 pos => ScreenBounds.TryGetInstance().OOB(pos),
-                (self, coll) => self.OnHitInternal(coll)
+                (self, coll) => OnHitInternal(coll)
             );
             Reset();
         }
-        
+
+        #endregion
+
+        #region IAsteroid Implementation
+
         /// <summary>
         /// Initializes the asteroid by enabling necessary components, snapping its position to the z=0 plane,
         /// and setting its initial velocity.
@@ -265,7 +269,7 @@ namespace Course.Attribute
         /// <summary>
         /// Determines whether the asteroid's parent is another asteroid.
         /// </summary>
-        private bool parentIsAsteroid => transform.parent?.TryGetComponent<Asteroid>(out _) ?? false;
+        private bool parentIsAsteroid => transform.parent?.TryGetComponent<IAsteroid>(out _) ?? false;
 
 
         #endregion

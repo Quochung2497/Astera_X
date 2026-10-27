@@ -9,10 +9,10 @@ namespace Course.Core
         Transform asteroidParent { get; }
         AsteroidsConfig asteroidsSO { get; }
 
-        Asteroid GetRandomAsteroidFromPool(int size);
+        IAsteroid GetRandomAsteroidFromPool(int size);
         
-        void AddAsteroid(Asteroid asteroid);
-        void RemoveAsteroid(Asteroid asteroid);
+        void AddAsteroid(IAsteroid asteroid);
+        void RemoveAsteroid(IAsteroid asteroid);
 
         public Vector3 GetSafeSpawnPosition(
             float minDistAwayFromPlayer,

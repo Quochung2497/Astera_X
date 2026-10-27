@@ -149,7 +149,7 @@ namespace Course.Attribute.Bullet
             if (!_launched || other.gameObject.layer != LayerNameProvider.GetLayer(LayerName.Asteroid))
                 return;
 
-            var asteroid = other.gameObject.GetComponent<Asteroid>();
+            var asteroid = other.gameObject.GetComponent<IAsteroid>();
             if (asteroid == null) return;
 
             try
