@@ -64,13 +64,8 @@ namespace Course.UI.Customization
 
         private void OnCustomizationLoaded()
         {
-            // the manager has already set SelectedBodyIndex / SelectedTurretIndex
-            // now make sure the actual ship is built to that state:
-            _customization.ApplyBody(_customization.SelectedBodyIndex);
-            _customization.ApplyTurret(_customization.SelectedTurretIndex);
             _hasLoaded = true;
             _shop.OnPartPurchased += HandlePartPurchased;
-            // and then refresh the toggles
             InitializeUI();
         }
 

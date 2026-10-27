@@ -99,6 +99,8 @@ namespace Course.Control
             // Apply loaded indices
             SelectedBodyIndex   = data.selectedBody;
             SelectedTurretIndex = data.selectedTurret;
+            ApplyBody(SelectedBodyIndex);
+            ApplyTurret(SelectedTurretIndex);
             OnLoaded?.Invoke();
         }
 
