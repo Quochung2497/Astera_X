@@ -80,26 +80,18 @@ namespace Course.Core
             {
                 Debug.LogWarning($"[RC] Initialization failed; keeping local spawn rules: {e.Message}");
             }
-
-                // TODO: Uncomment the following lines if you want to enable accelerometer and gyroscope input
-                // if (Accelerometer.current == null)
-                //     InputSystem.AddDevice<Accelerometer>();
-                // InputSystem.EnableDevice(Accelerometer.current);
-                // if(Gyroscope.current == null)
-                //     InputSystem.AddDevice<Gyroscope>();
-                // InputSystem.EnableDevice(Gyroscope.current);
-                // foreach (var d in InputSystem.devices)
-                //     Debug.Log($"Device: {d}");
         }
 
-        // private void FixedUpdate()
-        // {
-        //     if(Accelerometer.current != null && Accelerometer.current.enabled)
-        //         PollAccelerometer();
-        // }
+        private void Update()
+        {
+            if (Accelerometer.current != null && Accelerometer.current.enabled)
+                PollAccelerometer();
+        }
 
         private void OnEnable()
         {
+            EnableSensors();
+
             RegisterLevelEvents();
             RegisterScoreEvents();
             RegisterAchievementEvents();
@@ -267,6 +259,24 @@ namespace Course.Core
         }
 
         #endregion
+
+        private void EnableSensors()
+        {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            if (Accelerometer.current == null)
+                InputSystem.AddDevice<Accelerometer>();
+            if (Gyroscope.current == null)
+                InputSystem.AddDevice<Gyroscope>();
+#endif
+
+            if (Accelerometer.current != null)
+                InputSystem.EnableDevice(Accelerometer.current);
+            if (Gyroscope.current != null)
+                InputSystem.EnableDevice(Gyroscope.current);
+
+            foreach (var device in InputSystem.devices)
+                Debug.Log($"Device: {device}");
+        }
         
         public void PollAccelerometer()
         {
