@@ -80,23 +80,13 @@ namespace Course.ScriptableObject
         public GameObject[] GetPrefabs()
         {
 #if UNITY_EDITOR
-            if (useMobilePrefabs)
-            {
-                return asteroidMobilePrefabs.Length > 0
-                    ? asteroidMobilePrefabs
-                    : asteroidPrefabs;
-            }
-            else
-            {
-                return asteroidPrefabs;
-            }
-#elif UNITY_IOS || UNITY_ANDROID
-            return asteroidMobilePrefabs.Length > 0
+            bool onMobile = useMobilePrefabs;
+#else
+            bool onMobile = Application.isMobilePlatform;
+#endif
+            return onMobile && asteroidMobilePrefabs != null && asteroidMobilePrefabs.Length > 0
                 ? asteroidMobilePrefabs
                 : asteroidPrefabs;
-#else
-            return asteroidPrefabs;
-#endif
         }
         
         public int GetGlobalMaxParentSize()
