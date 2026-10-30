@@ -12,11 +12,13 @@ namespace Course.Utility
         [SerializeField]
         private bool useJoyStick = true;
 
+        private bool ShouldUseJoystick => useJoyStick && Application.isMobilePlatform;
+
         [Inject]
         private void Initialize(IInputResolver inputResolver)
         {
             _inputResolver = inputResolver;
-            _inputResolver.SetJoystickEnabled(useJoyStick);
+            _inputResolver.SetJoystickEnabled(ShouldUseJoystick);
         }
 
         private void OnEnable()
@@ -40,7 +42,7 @@ namespace Course.Utility
         }
         public void AwakeInitialize()
         {
-            joyStick?.gameObject.SetActive(useJoyStick);
+            joyStick?.gameObject.SetActive(ShouldUseJoystick);
         }
         
         public void StartInitialize()
