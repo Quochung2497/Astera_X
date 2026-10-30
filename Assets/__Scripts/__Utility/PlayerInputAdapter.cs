@@ -2,18 +2,21 @@ using System;
 using Course.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 namespace Course.Utility
 {
     public sealed class PlayerInputAdapter : System.IDisposable
     {
         private readonly IInputResolver _inputResolver;
+        private readonly Func<Vector2, bool> _isPointerOverUI;
         private PlayerControls _controls;
         private bool _isEnabled;
 
-        public PlayerInputAdapter(IInputResolver inputResolver)
+        public PlayerInputAdapter(IInputResolver inputResolver, Func<Vector2, bool> isPointerOverUI)
         {
             _inputResolver = inputResolver ?? throw new ArgumentNullException(nameof(inputResolver));
+            _isPointerOverUI = isPointerOverUI ?? throw new ArgumentNullException(nameof(isPointerOverUI));
             _controls = new PlayerControls();
         }
 
@@ -75,10 +78,21 @@ namespace Course.Utility
 
         private void OnFire(InputAction.CallbackContext context)
         {
-            if (context.control.device is Touchscreen touch)
-                _inputResolver.Fire(touch.primaryTouch.position.ReadValue());
+            if (!context.ReadValueAsButton()) return;
+
+            Vector2 screenPosition;
+            if (context.control.parent is TouchControl touch)
+            {
+                if (touch.phase.ReadValue() != UnityEngine.InputSystem.TouchPhase.Began) return;
+                screenPosition = touch.position.ReadValue();
+            }
             else if (context.control.device is Mouse mouse)
-                _inputResolver.Fire(mouse.position.ReadValue());
+                screenPosition = mouse.position.ReadValue();
+            else
+                return;
+
+            if (_isPointerOverUI(screenPosition)) return;
+            _inputResolver.Fire(screenPosition);
         }
     }
 }

@@ -106,12 +106,12 @@ namespace Course.Input
                 },
                 {
                     ""name"": ""Shoot"",
-                    ""type"": ""Button"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""bc7c1c19-5fc6-45a9-bb23-a7eaf786facd"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
-                    ""initialStateCheck"": true,
+                    ""initialStateCheck"": false,
                     ""priority"": 0
                 },
                 {
@@ -250,7 +250,7 @@ namespace Course.Input
                 {
                     ""name"": """",
                     ""id"": ""32c4e075-e3b6-4e73-ae39-3273ba109748"",
-                    ""path"": ""<Touchscreen>/Press"",
+                    ""path"": ""<Touchscreen>/touch*/press"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
