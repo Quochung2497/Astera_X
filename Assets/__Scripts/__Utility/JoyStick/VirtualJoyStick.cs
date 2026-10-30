@@ -16,6 +16,7 @@ namespace Course.Utility
 
         private Vector2 _startPos;
         private float _dragRange;
+        private int? _pointerId;
 
         void Awake()
         {
@@ -29,11 +30,15 @@ namespace Course.Utility
 
         public void OnPointerDown(PointerEventData eventData)
         {
+            if (_pointerId.HasValue) return;
+            _pointerId = eventData.pointerId;
             OnDrag(eventData);
         }
 
         public void OnDrag(PointerEventData eventData)
         {
+            if (_pointerId != eventData.pointerId) return;
+
             // Convert screen point to local point in this RectTransform
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 transform as RectTransform,
@@ -51,6 +56,7 @@ namespace Course.Utility
 
         public void OnPointerUp(PointerEventData eventData)
         {
+            if (_pointerId != eventData.pointerId) return;
             ResetInput();
         }
 
@@ -66,6 +72,7 @@ namespace Course.Utility
 
         private void ResetInput()
         {
+            _pointerId = null;
             if (handle != null) handle.anchoredPosition = _startPos;
             OnValueChanged?.Invoke(Vector2.zero);
         }
