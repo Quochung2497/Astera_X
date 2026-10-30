@@ -1,47 +1,60 @@
-﻿using UnityEngine;
+using Course.Utility.Events;
+using UnityEngine;
 
-public class spriteScaler : MonoBehaviour {
+public class spriteScaler : MonoBehaviour
+{
+    private Camera cam;
+    private EventBinding<ViewportChangedEvent> _viewportBinding;
 
-    //Camera variable to store the Main camera 
-    //(so we aren't calling Camera.main 
-    //in every frame which does FindCOmponent every time
-    
-    Camera cam;
-
-    //sprite transform to scale when we have the aspect ratio
-
-    Transform sprite;
-    
-    // Use this for initialization
-   
-    float cachedOrtho;
-	
-    void Start () {
-
-        cam = Camera.main;
-        sprite = gameObject.GetComponent<Transform>();
-        cachedOrtho = cam.orthographicSize;
-        ScaleToScreenSize(gameObject);
-
-    }
-	
-    public void ScaleToScreenSize(GameObject s)
+    private void Awake()
     {
+        cam = Camera.main;
+    }
 
-            var sr = s.GetComponent<SpriteRenderer>() ;
-            if (sr == null) return;
+    private void OnEnable()
+    {
+        _viewportBinding ??= new EventBinding<ViewportChangedEvent>(OnViewportChanged);
+        EventBus<ViewportChangedEvent>.Register(_viewportBinding);
+        ScaleToScreenSize(gameObject);
+    }
 
-            transform.localScale = Vector3.one;
+    private void OnDisable()
+    {
+        if (_viewportBinding != null)
+            EventBus<ViewportChangedEvent>.Deregister(_viewportBinding);
+    }
 
-            var width = sr.sprite.bounds.size.x;
-            var height = sr.sprite.bounds.size.y;
+    private void OnViewportChanged(ViewportChangedEvent viewport)
+    {
+        if (viewport.Camera == cam) ScaleToScreenSize(gameObject);
+    }
 
-            // vertical size in world units is simply twice the orthographicSize
-            float worldScreenHeight = cam.orthographicSize * 2.0f;
-            // horizontal size is scaled by the pixel aspect ratio
-            float worldScreenWidth  = worldScreenHeight / Screen.height * Screen.width;
-            
-            // apply new scale
-            transform.localScale = new Vector3(worldScreenWidth / width, worldScreenHeight / height, 1);
+    public void ScaleToScreenSize(GameObject target)
+    {
+        if (target == null || cam == null || !cam.orthographic) return;
+
+        var renderer = target.GetComponent<SpriteRenderer>();
+        if (renderer == null || renderer.sprite == null) return;
+
+        var targetTransform = target.transform;
+        var previousScale = targetTransform.localScale;
+        targetTransform.localScale = Vector3.one;
+        var baseSize = renderer.bounds.size;
+        if (baseSize.x <= 0f || baseSize.y <= 0f)
+        {
+            targetTransform.localScale = previousScale;
+            return;
+        }
+
+        var height = cam.orthographicSize * 2f;
+        var width = height * cam.aspect;
+        var scale = Mathf.Max(width / baseSize.x, height / baseSize.y);
+        targetTransform.localScale = new Vector3(scale, scale, previousScale.z);
+
+        var offset = cam.transform.position - renderer.bounds.center;
+        var position = targetTransform.position;
+        position.x += offset.x;
+        position.y += offset.y;
+        targetTransform.position = position;
     }
 }

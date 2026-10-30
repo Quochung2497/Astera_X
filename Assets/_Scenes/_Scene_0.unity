@@ -959,7 +959,7 @@ PrefabInstance:
     - target: {fileID: 1487972784202249658, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: useJoyStick
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1719381144539029833, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
@@ -1165,6 +1165,26 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3292079838594402662, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_UiScaleMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3292079838594402662, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_ScreenMatchMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3292079838594402662, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_ReferenceResolution.x
+      value: 1920
+      objectReference: {fileID: 0}
+    - target: {fileID: 3292079838594402662, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 1080
       objectReference: {fileID: 0}
     - target: {fileID: 3516301509112511973, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
@@ -1994,7 +2014,12 @@ PrefabInstance:
     - target: {fileID: 8519071024555308747, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
       propertyPath: m_fontSize
-      value: 40.2
+      value: 54.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8672299512763323303, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -0.7208252
       objectReference: {fileID: 0}
     - target: {fileID: 8774448717708032406, guid: 4444605443e0b014eb9c0f040ba10ac8,
         type: 3}
@@ -2025,6 +2050,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8845237448828008265, guid: 4444605443e0b014eb9c0f040ba10ac8,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 36.2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
