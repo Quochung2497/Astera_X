@@ -19,8 +19,6 @@ namespace Course.Installation
         private StatsProvider statsProvider = null;
 
         
-        [Header("Input")]
-        [SerializeField] InputReader inputReader;
         
         [Header("Player Components")]
         [SerializeField] 
@@ -49,6 +47,8 @@ namespace Course.Installation
         private Rigidbody _rb;
         private PlayerShipBehaviour.PlayerBuilder _builder;
         
+        [Inject] private IInputReader _inputReader;
+
         [Inject]
         private IAsteraX _manager;
         [Inject]
@@ -56,8 +56,6 @@ namespace Course.Installation
 
         public void AwakeInitialize()
         {
-            inputReader.Initialize();
-            
             _damageable = new Damageable(config.JumpCount);
             statsProvider.RegisterStatInstance(Stats.Health, _damageable);
             healthBehaviour?.Initialize(_damageable);
@@ -86,7 +84,7 @@ namespace Course.Installation
             reAppearEffect?.Initialize(jumpBehaviour);
             _builder = new PlayerShipBehaviour.PlayerBuilder(playerController)
                 .WithMover(_mover)
-                .WithInputReader(inputReader)
+                .WithInputReader(_inputReader)
                 .WithMoveSpeed(statsProvider.Get(Stats.Speed).Value)
                 .WithRigidbody(_rb)
                 .WithTiltLogic(_tiltWithVelocity)
@@ -107,7 +105,6 @@ namespace Course.Installation
         private void OnDestroy()
         {
             _customizationManager.OnApplyShipPart -= HandleCustomizationChanged;
-            inputReader.Shutdown();
         }
         
         private void HandleCustomizationChanged(PartType part, Transform mount, ShipPartSO.StatModifier[] mods)

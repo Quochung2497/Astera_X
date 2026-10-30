@@ -26,8 +26,6 @@ namespace Course.Installation
         [Tooltip("Assign the ExhaustTrailWrapBehaviour prefab here.")]
         [SerializeField] private ExhaustTrailWrapBehaviour trailPrefab;
         
-        [Header("Input")]
-        [SerializeField] InputReader inputReader;
         
         [Header("Turret")]
         [SerializeField]
@@ -43,6 +41,8 @@ namespace Course.Installation
         private IJumpBehaviour _jumpBehaviour;
         private TurretBehaviour.TurretBuilder _builder;
         
+        [Inject] private IInputReader _inputReader;
+
         [Inject]
         private ICustomization _customizationManager;
 
@@ -64,7 +64,7 @@ namespace Course.Installation
             statsProvider.RegisterStat(Stats.Damage, defaultBulletConfig.damage);
             _shooter = new Shooter(_bulletFactory, statsProvider.Get(Stats.Speed).MaxValue, statsProvider.Get(Stats.Health).MaxValue, statsProvider.Get(Stats.Damage).MaxValue);
             _builder = new TurretBehaviour.TurretBuilder(turretBehaviour)
-                .WithInputReader(inputReader)
+                .WithInputReader(_inputReader)
                 .WithRotator(_rotator)
                 .WithHealthBehaviour(_healthBehaviour)
                 .WithJumpBehaviour(_jumpBehaviour);

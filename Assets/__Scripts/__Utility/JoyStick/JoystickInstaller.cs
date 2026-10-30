@@ -1,6 +1,6 @@
-﻿using System;
-using Course.Core;
+﻿using Course.Core;
 using UnityEngine;
+using Utility.DependencyInjection;
 
 namespace Course.Utility
 {
@@ -8,28 +8,35 @@ namespace Course.Utility
     {
         [SerializeField]
         private VirtualJoyStick joyStick = null;
-        [SerializeField]
-        private InputReader inputReader = null;
+        private IInputResolver _inputResolver;
         [SerializeField]
         private bool useJoyStick = true;
 
+        [Inject]
+        private void Initialize(IInputResolver inputResolver)
+        {
+            _inputResolver = inputResolver;
+            _inputResolver.SetJoystickEnabled(useJoyStick);
+        }
+
         private void OnEnable()
         {
-            if(joyStick == null || inputReader == null)
+            if(joyStick == null || _inputResolver == null)
                 return;
             joyStick.OnValueChanged += OnJoystickMoved;
         }
         
         private void OnDisable()
         {
-            if(joyStick == null || inputReader == null)
+            if(joyStick == null || _inputResolver == null)
                 return;
             joyStick.OnValueChanged -= OnJoystickMoved;
+            _inputResolver.ClearMove(InputSource.VirtualJoystick);
         }
         
         private void OnJoystickMoved(Vector2 dir)
         {
-            inputReader?.FeedMove(dir);
+            _inputResolver?.SetMove(InputSource.VirtualJoystick, dir);
         }
         public void AwakeInitialize()
         {

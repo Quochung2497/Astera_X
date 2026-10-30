@@ -2434,7 +2434,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   joyStick: {fileID: 5160024586487407131}
-  inputReader: {fileID: 11400000, guid: 65d029c290d82b646b60d9bab52982f0, type: 2}
   useJoyStick: 1
 --- !u!1 &3177461331791032493
 GameObject:

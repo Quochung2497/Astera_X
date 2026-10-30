@@ -6,6 +6,7 @@ using Course.Services;
 using Course.Services.Achievements;
 using Course.Services.SaveService;
 using Course.Services.Shop;
+using Course.Utility;
 using UnityEngine;
 using Utility.DependencyInjection;
 
@@ -31,6 +32,16 @@ namespace Course.Installation
         [SerializeField] private PurseBehaviour purseBehaviour;
         
         [SerializeField] private ShopManager shopManager;
+
+        private InputResolver _inputResolver;
+
+        [Provide]
+        public IInputResolver ProvideInputResolver() => GetInputResolver();
+
+        [Provide]
+        public IInputReader ProvideInputReader() => GetInputResolver();
+
+        private InputResolver GetInputResolver() => _inputResolver ??= new InputResolver();
         
         [Provide]
         public IScoreBehaviour ProvideScore() => score;

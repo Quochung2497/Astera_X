@@ -31,7 +31,7 @@ namespace Course.Core
 
         [SerializeField] private AsteroidsConfig asteroidsConfig;
         [SerializeField] private UnityServicesConfig unityServicesConfig;
-        [SerializeField] private InputReader inputReader;
+        [Inject] private IInputResolver _inputResolver;
         
         [Inject] private IAchievementManager _achievementManager;
         [Inject] private ICustomization _customization;
@@ -90,6 +90,7 @@ namespace Course.Core
 
         private void OnEnable()
         {
+            InputSystem.onDeviceChange += OnInputDeviceChanged;
             EnableSensors();
 
             RegisterLevelEvents();
@@ -100,6 +101,8 @@ namespace Course.Core
 
         private void OnDisable()
         {
+            InputSystem.onDeviceChange -= OnInputDeviceChanged;
+            _inputResolver?.ClearMove(InputSource.Tilt);
             DeregisterLevelEvents();
             DeregisterScoreEvents();
             DeregisterAchievementEvents();
@@ -260,6 +263,18 @@ namespace Course.Core
 
         #endregion
 
+        private void OnInputDeviceChanged(InputDevice device, InputDeviceChange change)
+        {
+            if (device is not Accelerometer) return;
+
+            if (change == InputDeviceChange.Removed ||
+                change == InputDeviceChange.Disconnected ||
+                change == InputDeviceChange.Disabled)
+            {
+                _inputResolver?.ClearMove(InputSource.Tilt);
+            }
+        }
+
         private void EnableSensors()
         {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
@@ -280,6 +295,8 @@ namespace Course.Core
         
         public void PollAccelerometer()
         {
+            if (_inputResolver == null || !_inputResolver.IsEnabled || _inputResolver.IsJoystickEnabled) return;
+
             // 1) read raw 3D accel
             Vector3 a = Accelerometer.current?.acceleration.ReadValue() ?? Vector3.zero;
 
@@ -307,7 +324,7 @@ namespace Course.Core
             Vector2 raw = new Vector2(normX, normY);
             Vector2 move = ApplyDeadzone(raw, 0.1f);
 
-            inputReader.FeedMove(move);
+            _inputResolver.SetMove(InputSource.Tilt, move);
         }
         
         private Vector2 ApplyDeadzone(Vector2 v, float minDead, float maxDead = 1f)
