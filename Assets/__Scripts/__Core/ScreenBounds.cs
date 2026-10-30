@@ -1,4 +1,5 @@
 using Course.Utility;
+using Course.Utility.Events;
 using UnityEngine;
 
 namespace Course.Core
@@ -49,6 +50,8 @@ namespace Course.Core
         /// Stores the last screen height to detect changes.
         /// </summary>
         private int _lastH;
+        private float _lastAspect;
+        private float _lastOrthographicSize;
 
         #endregion
         
@@ -170,11 +173,13 @@ namespace Course.Core
 
         /// <summary>
         /// Unity's Update method.
-        /// Resizes the collider if the screen dimensions change.
+        /// Updates the bounds and notifies listeners when the viewport changes.
         /// </summary>
         private void Update()
         {
-            if (Screen.width != _lastW || Screen.height != _lastH)
+            if (Screen.width != _lastW || Screen.height != _lastH ||
+                !Mathf.Approximately(_cam.aspect, _lastAspect) ||
+                !Mathf.Approximately(_cam.orthographicSize, _lastOrthographicSize))
             {
                 ResizeCollider();
             }
@@ -187,6 +192,8 @@ namespace Course.Core
         {
             _lastW = Screen.width;
             _lastH = Screen.height;
+            _lastAspect = _cam.aspect;
+            _lastOrthographicSize = _cam.orthographicSize;
 
             var height = _cam.orthographicSize * 2f;
             var width = height * _cam.aspect;
@@ -200,6 +207,7 @@ namespace Course.Core
             transform.localScale = new Vector3(width, height, 1f);
 
             _box.size = new Vector3(1f, 1f, thickness);
+            EventBus<ViewportChangedEvent>.Raise(new ViewportChangedEvent(_cam));
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace Course.Utility.Events
 {
@@ -6,6 +7,16 @@ namespace Course.Utility.Events
     /// Marker interface for defining event types in the application.
     /// </summary>
     public interface IEvent { }
+
+    public struct ViewportChangedEvent : IEvent
+    {
+        public Camera Camera { get; }
+
+        public ViewportChangedEvent(Camera camera)
+        {
+            Camera = camera;
+        }
+    }
 
     // Score Events
 
