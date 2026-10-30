@@ -53,7 +53,6 @@ MonoBehaviour:
   statsProvider: {fileID: 7549980555748705200}
   trailPrefab: {fileID: -4075948369645413421, guid: 212e86522e43fd244a0f605b1a5a5c43,
     type: 3}
-  inputReader: {fileID: 11400000, guid: 65d029c290d82b646b60d9bab52982f0, type: 2}
   turretBehaviour: {fileID: 688670436229071882}
 --- !u!114 &688670436229071882
 MonoBehaviour:
@@ -142,7 +141,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   config: {fileID: 11400000, guid: 99949a6d85e4a4c4c8aebb00f36fccde, type: 2}
   statsProvider: {fileID: 2639186610357935041}
-  inputReader: {fileID: 11400000, guid: 65d029c290d82b646b60d9bab52982f0, type: 2}
   playerController: {fileID: 2305430630981110134}
   healthBehaviour: {fileID: 7921490642722347170}
   scoreBehaviour: {fileID: 8148998507493297116}

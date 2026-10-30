@@ -5,7 +5,6 @@ using Course.Core;
 using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Course.Control.Turret
 {
@@ -25,7 +24,7 @@ namespace Course.Control.Turret
         /// <summary>
         /// Reference to the input reader for handling player input events.
         /// </summary>
-        private InputReader _inputReader;
+        private IInputReader _inputReader;
 
         /// <summary>
         /// Reference to the rotator component responsible for aiming the turret.
@@ -85,7 +84,7 @@ namespace Course.Control.Turret
         /// <param name="turret">The transform of the turret object.</param>
         /// <param name="spawn">The transform of the spawn point for projectiles.</param>
         /// <param name="healthBehaviour">The jump behavior component.</param>
-        private void Initialize(InputReader inputReader,
+        private void Initialize(IInputReader inputReader,
             IRotator rotator,
             IShooter shooter,
             Transform turret,
@@ -134,22 +133,10 @@ namespace Course.Control.Turret
         /// <summary>
         /// Handles the firing logic, including aiming and shooting projectiles.
         /// </summary>
-        private void OnFire()
+        private void OnFire(Vector2 screenPos)
         {
             if (_healthBehaviour.IsDead || _gameManager.currentStates != GameState.level || _isJumping)
                 return;
-            Vector2 screenPos;
-            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
-            {
-                // Mobile tap
-                screenPos = Touchscreen.current.primaryTouch.position.ReadValue();
-            }
-            else
-            {
-                // Mouse click or gamepad fallback
-                screenPos = Mouse.current.position.ReadValue();
-            }
-        
             _rotator.Aim(_turret, screenPos, _cam);
             if (debugDrawLine)
             {
@@ -234,7 +221,7 @@ namespace Course.Control.Turret
             /// <summary>
             /// Reference to the input reader for handling player input events.
             /// </summary>
-            InputReader _inputReader;
+            IInputReader _inputReader;
         
             /// <summary>
             /// Reference to the rotator component responsible for aiming the turret.
@@ -277,7 +264,7 @@ namespace Course.Control.Turret
             /// </summary>
             /// <param name="reader">The input reader.</param>
             /// <returns>The current TurretBuilder instance.</returns>
-            public TurretBuilder WithInputReader(InputReader reader)
+            public TurretBuilder WithInputReader(IInputReader reader)
             {
                 _inputReader = reader;
                 return this;
@@ -350,7 +337,7 @@ namespace Course.Control.Turret
             /// </summary>
             public void Build()
             {
-                if (_inputReader == null) throw new InvalidOperationException("InputReader not set");
+                if (_inputReader == null) throw new InvalidOperationException("IInputReader not set");
                 if (_rotator == null) throw new InvalidOperationException("Rotator not set");
                 if (_shooter == null) throw new InvalidOperationException("Shooter not set");
                 if (_turretTransform == null) throw new InvalidOperationException("Turret Transform not set");

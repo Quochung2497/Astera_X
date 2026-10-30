@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 3815761020765121845}
   - component: {fileID: 8323123358747573731}
   - component: {fileID: 965974792178988003}
+  - component: {fileID: 417353537753480079}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -212,7 +213,6 @@ MonoBehaviour:
   asteroidsConfig: {fileID: 11400000, guid: 1122c0f3a74fd19428d5f189cbd23ce5, type: 2}
   unityServicesConfig: {fileID: 11400000, guid: bab9c2611a1dc644ea90094fe09642e6,
     type: 2}
-  inputReader: {fileID: 11400000, guid: 65d029c290d82b646b60d9bab52982f0, type: 2}
 --- !u!114 &965974792178988003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -227,3 +227,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemToTest: {fileID: 11400000, guid: 5bbf36e815da3984cbd532e885390015, type: 2}
   PremiumItemToTest: {fileID: 11400000, guid: caa3df07dfb280e41ba9527e590f3dc3, type: 2}
+--- !u!114 &417353537753480079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8547332754108372098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30447b14fdcb448c860daff2f41a3844, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:

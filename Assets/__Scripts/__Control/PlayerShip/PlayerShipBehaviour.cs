@@ -22,7 +22,7 @@ namespace Course.Control.Player
       /// <summary>
       /// Reference to the input reader for handling player input events.
       /// </summary>
-      private InputReader _inputReader;
+      private IInputReader _inputReader;
 
       /// <summary>
       /// Reference to the mover component responsible for moving the player ship.
@@ -71,7 +71,7 @@ namespace Course.Control.Player
       /// <param name="moveSpeed">The movement speed of the player ship.</param>
       /// <param name="rb">The rigidbody component of the player ship.</param>
       /// <param name="tiltWithVelocity">The tilt logic component for tilting the ship.</param>
-      private void Initialize(IMover mover, InputReader inputReader, float moveSpeed, Rigidbody rb, ITiltWithVelocity tiltWithVelocity, IJumpBehaviour jumpBehaviour)
+      private void Initialize(IMover mover, IInputReader inputReader, float moveSpeed, Rigidbody rb, ITiltWithVelocity tiltWithVelocity, IJumpBehaviour jumpBehaviour)
       {
           if (!_isInitialized)
           {
@@ -82,6 +82,7 @@ namespace Course.Control.Player
               _jumpBehaviour   = jumpBehaviour;
 
               _inputReader.OnMoveEvent   += OnMove;
+              OnMove(_inputReader.MoveDirection);
               _jumpBehaviour.OnDisappear += OnDisappear;
               _jumpBehaviour.OnReappear  += OnReappear;
 
@@ -146,6 +147,7 @@ namespace Course.Control.Player
           if (!_isInitialized)
               return;
           _inputReader.OnMoveEvent += OnMove;
+          OnMove(_inputReader.MoveDirection);
           _jumpBehaviour.OnReappear += OnReappear;
           _jumpBehaviour.OnDisappear += OnDisappear;
       }
@@ -185,7 +187,7 @@ namespace Course.Control.Player
       {
           private readonly PlayerShipBehaviour _behaviour;
           private IMover _mover;
-          private InputReader _inputReader;
+          private IInputReader _inputReader;
           private float _moveSpeed;
           private ITiltWithVelocity _tilt;
           private IJumpBehaviour _jumpBehaviour;
@@ -216,7 +218,7 @@ namespace Course.Control.Player
           /// </summary>
           /// <param name="reader">The input reader.</param>
           /// <returns>The current PlayerBuilder instance.</returns>
-          public PlayerBuilder WithInputReader(InputReader reader)
+          public PlayerBuilder WithInputReader(IInputReader reader)
           {
               _inputReader = reader;
               return this;
@@ -273,7 +275,7 @@ namespace Course.Control.Player
           public void Build()
           {
               if (_mover == null) throw new InvalidOperationException("Mover not set");
-              if (_inputReader == null) throw new InvalidOperationException("InputReader not set");
+              if (_inputReader == null) throw new InvalidOperationException("IInputReader not set");
               if (_tilt == null) throw new InvalidOperationException("TiltLogic not set");
               if (_rb == null) throw new InvalidOperationException("Rigidbody not set");
           

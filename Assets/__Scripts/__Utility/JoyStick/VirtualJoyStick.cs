@@ -51,8 +51,22 @@ namespace Course.Utility
 
         public void OnPointerUp(PointerEventData eventData)
         {
-            // Reset
-            handle.anchoredPosition = _startPos;
+            ResetInput();
+        }
+
+        private void OnDisable()
+        {
+            ResetInput();
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (!hasFocus) ResetInput();
+        }
+
+        private void ResetInput()
+        {
+            if (handle != null) handle.anchoredPosition = _startPos;
             OnValueChanged?.Invoke(Vector2.zero);
         }
     }
