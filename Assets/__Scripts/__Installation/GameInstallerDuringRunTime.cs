@@ -35,6 +35,15 @@ namespace Course.Installation
 
         private InputResolver _inputResolver;
 
+        private void Awake()
+        {
+            if (Application.platform != RuntimePlatform.WebGLPlayer || !Application.isMobilePlatform) return;
+
+            int mobileQuality = System.Array.IndexOf(QualitySettings.names, "Medium");
+            if (mobileQuality >= 0 && QualitySettings.GetQualityLevel() != mobileQuality)
+                QualitySettings.SetQualityLevel(mobileQuality);
+        }
+
         [Provide]
         public IInputResolver ProvideInputResolver() => GetInputResolver();
 
