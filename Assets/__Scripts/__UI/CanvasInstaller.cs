@@ -3,7 +3,6 @@ using Course.Control;
 using Course.Core;
 using Course.Level;
 using Course.Services.Achievements;
-using Course.Utility.Events;
 using UnityEngine;
 using Utility.DependencyInjection;
 
@@ -42,12 +41,7 @@ namespace Course.UI
             gameOverUI.Initialize(
                 _scoreBehaviour, _level, _achievementManager,
                 GameManager.TryGetInstance().RestartGame);
-            mainMenuButton.Initialize(() =>
-            {
-                EventBus<GameStateChangedEvent>.Raise(
-                    new GameStateChangedEvent(GameState.preLevel)
-                );
-            });
+            mainMenuButton.Initialize(_level.EnterPreLevel);
         }
 
         private void Awake()

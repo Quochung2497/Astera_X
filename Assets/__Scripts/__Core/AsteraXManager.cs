@@ -14,10 +14,6 @@ namespace Course.Core
     {
         #region Serialize Fields
         [Header("Set in Inspector")]
-        [Tooltip("This sets the AsteroidsScriptableObject to be used throughout the game.")]
-        [field: SerializeField]
-        public AsteroidsConfig asteroidsSO { get; private set; }
-
         [SerializeField] 
         private Transform anchor;
         
@@ -29,6 +25,8 @@ namespace Course.Core
         /// The parent transform for all asteroid objects.
         /// </summary>
         public Transform asteroidParent { get; private set; }
+
+        public AsteroidsConfig asteroidsSO => _asteroidsConfig;
 
         #endregion
 
@@ -59,6 +57,9 @@ namespace Course.Core
         /// </summary>
         [Inject]
         private ILevel _levelDriver;
+
+        [Inject]
+        private AsteroidsConfig _asteroidsConfig;
 
         private GameManager _gameManager;
         
@@ -174,8 +175,7 @@ namespace Course.Core
             try
             {
                 _isSpawning = true;
-                int levelNumber = _levelDriver.CurrentLevel;
-                if (!asteroidsSO.TryGetSpawnRuleForLevel(levelNumber, out var rule))
+                if (_levelDriver.CurrentSpawnRule is not { } rule)
                     return;
 
                 // Spawn exactly rule.parentCount parents:
@@ -201,7 +201,7 @@ namespace Course.Core
             int levelNumber = _levelDriver.CurrentLevel;
         }
         
-        private void SpawnCluster(AsteroidsConfig.SpawnRule rule, int parentIndex)
+        private void SpawnCluster(SpawnRule rule, int parentIndex)
         {
    
             // a) Acquire one parent of size rule.parentSize
@@ -257,6 +257,7 @@ namespace Course.Core
                 var asteroidPool = new AsteroidPool(prefabAst, asteroidParent);
                 _pools.Add(new AsteroidFactory(asteroidPool));
             }
+            // TODO: Read the starting level from game settings.
             _levelDriver.Initialize(1);
         }
 

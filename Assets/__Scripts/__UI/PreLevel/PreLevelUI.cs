@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using Course.Core;
 using Course.Level;
 using TMPro;
 using UnityEngine;
@@ -28,33 +27,23 @@ namespace Course.UI
         private float duration = 2f;
 
         private ILevel _levelController;
-        private IAsteraX _asteraX;
         private Action _onPresentationCompleted;
-        private int _asteroidCount;
-        private int _childCount;
-        private int _grandchildCount;
         private bool _isInitialized;
 
         /// <summary>
-        /// Initializes display data and the callback invoked after the presentation completes.
+        /// Binds the level data and the callback invoked after the presentation completes.
         /// </summary>
-        public void Initialize(
-            ILevel levelController,
-            IAsteraX asteraX,
-            Action onPresentationCompleted
-        )
+        public void Initialize(ILevel levelController, Action onPresentationCompleted)
         {
-            _asteraX = asteraX;
-            _levelController  = levelController;
+            _levelController = levelController;
             _onPresentationCompleted = onPresentationCompleted;
-            UpdateUI();
             _levelController.OnPreLevel += UpdateUI;
             _isInitialized = true;
         }
 
         /// <summary>
         /// Assigns text into both labels: “Level X” and “Asteroids: A  Children: C  Grandchildren: G”.
-        /// Called by Initialize() (before enabling) so that the moment OnEnable() runs, the labels exist.
+        /// Called after the rule is selected and before the panel is enabled.
         /// </summary>
         private void UpdateUI()
         {
@@ -63,27 +52,14 @@ namespace Course.UI
                 levelPanel.text = $"Level {_levelController.CurrentLevel}";
             }
             
-            if (_asteraX.asteroidsSO.TryGetSpawnRuleForLevel(_levelController.CurrentLevel, out var rule))
-            {
-                _asteroidCount   = rule.parentCount;
-                _childCount      = rule.parentCount * rule.childCount;
-                _grandchildCount = rule.parentCount * rule.childCount * rule.grandchildCount;
-            }
-            else
-            {
-                // No rule → maybe set all to zero
-                _asteroidCount   = 0;
-                _childCount      = 0;
-                _grandchildCount = 0;
-            }
+            if (infoLabel == null) return;
 
-            if (infoLabel != null)
-            {
-                infoLabel.text =
-                    $"Asteroids: {_asteroidCount}   " +
-                    $"Children: {_childCount}   " +
-                    $"Grandchildren: {_grandchildCount}";
-            }
+            var rule = _levelController.CurrentSpawnRule.GetValueOrDefault();
+            int childCount = rule.parentCount * rule.childCount;
+            infoLabel.text =
+                $"Asteroids: {rule.parentCount}   " +
+                $"Children: {childCount}   " +
+                $"Grandchildren: {childCount * rule.grandchildCount}";
         }
 
         /// <summary>

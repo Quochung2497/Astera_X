@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Linq;
+using Course.Level;
 using UnityEngine;
 
 namespace Course.ScriptableObject
 {
     [CreateAssetMenu(menuName = "Scriptable Objects/AsteroidsSO", fileName = "AsteroidsSO.asset")]
-    public class AsteroidsConfig : UnityEngine.ScriptableObject
+    public class AsteroidsConfig : UnityEngine.ScriptableObject, ILevelSpawnRules
     {
         /// <summary>
         /// Minimum velocity for asteroid movement.
@@ -47,15 +48,21 @@ namespace Course.ScriptableObject
         [Tooltip("For each level, assign one LevelSpawnRule, which in turn contains an array of 'SpawnRule'.")]
         [SerializeField]
         private LevelSpawnRule[] levelSpawnRules;
-        
+
+        private LevelSpawnRule[] _activeRemoteRules;
+        private LevelSpawnRule[] _pendingRemoteRules;
+
+        private LevelSpawnRule[] ActiveSpawnRules => _activeRemoteRules ?? levelSpawnRules;
+
         public bool TryGetSpawnRuleForLevel(int level, out SpawnRule outRule)
         {
             outRule = default;
-            if (levelSpawnRules == null || levelSpawnRules.Length == 0)
+            var rules = ActiveSpawnRules;
+            if (rules == null || rules.Length == 0)
                 return false;
 
             // 1) Exact match?
-            var exact = levelSpawnRules.FirstOrDefault(lsr => lsr.levelNumber == level);
+            var exact = rules.FirstOrDefault(lsr => lsr.levelNumber == level);
             if (exact.levelNumber == level)
             {
                 outRule = exact.rule;
@@ -63,7 +70,7 @@ namespace Course.ScriptableObject
             }
 
             // 2) If level is beyond highest, bump the counts:
-            var highest = levelSpawnRules.OrderBy(lsr => lsr.levelNumber).Last();
+            var highest = rules.OrderBy(lsr => lsr.levelNumber).Last();
             if (level > highest.levelNumber)
             {
                 outRule = highest.rule;   // copy
@@ -92,9 +99,10 @@ namespace Course.ScriptableObject
         public int GetGlobalMaxParentSize()
         {
             int maxSize = 1;
-            if (levelSpawnRules != null)
+            var rules = ActiveSpawnRules;
+            if (rules != null)
             {
-                foreach (var lvlRule in levelSpawnRules)
+                foreach (var lvlRule in rules)
                 {
                     if (lvlRule.rule.parentSize > maxSize)
                         maxSize = lvlRule.rule.parentSize;
@@ -112,12 +120,23 @@ namespace Course.ScriptableObject
             }
         }
         
-        public void SetLevelSpawnRules(LevelSpawnRule[] newRules)
+        internal void QueueRemoteSpawnRules(LevelSpawnRule[] rules) => _pendingRemoteRules = rules;
+
+        public SpawnRule? PrepareLevel(int level)
         {
-            levelSpawnRules = newRules;
-#if UNITY_EDITOR
-            UnityEditor.EditorUtility.SetDirty(this);
-#endif
+            if (_pendingRemoteRules != null)
+            {
+                _activeRemoteRules = _pendingRemoteRules;
+                _pendingRemoteRules = null;
+            }
+
+            return TryGetSpawnRuleForLevel(level, out var rule) ? rule : (SpawnRule?)null;
+        }
+
+        internal void ResetRuntimeSpawnRules()
+        {
+            _activeRemoteRules = null;
+            _pendingRemoteRules = null;
         }
         
         [Serializable]
@@ -125,33 +144,6 @@ namespace Course.ScriptableObject
         {
             public int levelNumber;  // the level index
             public SpawnRule rule;        // the array of spawn‐rules for that level
-        }
-    
-        [Serializable]
-        public struct SpawnRule
-        {
-            [Header("––– Parent –––")]
-            [Min(1)] public int parentSize;       // e.g. “3” for a size‐3 parent
-            [Min(0)] public int parentCount;      // how many parents
-            [Min(1)] public int parentHealth; 
-            [Min(0)] public int parentPoints;
-            [Min(0)] public int parentDamage;
-            
-            [Space(6)]
-            [Header("––– Child –––")]
-            [Min(1)] public int childSize;        // fragment size for children
-            [Min(0)] public int childCount;       // how many children per parent
-            [Min(1)] public int childHealth;  
-            [Min(0)] public int childPoints; 
-            [Min(0)] public int childDamage; 
-            
-            [Space(6)]
-            [Header("––– Grandchild –––")]
-            [Min(1)] public int grandchildSize;   // fragment size for grandchildren
-            [Min(0)] public int grandchildCount;  // how many grandchildren per child
-            [Min(1)] public int grandchildHealth;
-            [Min(0)] public int grandchildPoints;
-            [Min(0)] public int grandchildDamage;
         }
     }
 }

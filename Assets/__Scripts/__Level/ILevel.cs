@@ -8,7 +8,9 @@ namespace Course.Level
         event Action OnLevelStarted;
         event Action OnLevelCleared;
         int CurrentLevel { get; }
+        SpawnRule? CurrentSpawnRule { get; }
         void Initialize(int level);
+        void EnterPreLevel();
         void LevelCleared();
         void StartNextLevel();
     }

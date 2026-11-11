@@ -20,6 +20,8 @@ namespace Course.Installation
         private ScoreBehaviour score;
         [SerializeField]
         private PlayerShipConfig playerShipConfig;
+        [SerializeField]
+        private AsteroidsConfig asteroidsConfig;
 
         [SerializeField] private LevelBehaviour levelBehaviour;
         [SerializeField] private AsteraXManager manager;
@@ -40,6 +42,8 @@ namespace Course.Installation
 
         private void Awake()
         {
+            asteroidsConfig.ResetRuntimeSpawnRules();
+
             if (Application.platform != RuntimePlatform.WebGLPlayer || !Application.isMobilePlatform) return;
 
             int mobileQuality = System.Array.IndexOf(QualitySettings.names, "Medium");
@@ -71,6 +75,12 @@ namespace Course.Installation
 
         [Provide]
         public ILevel ProvideLevel() => levelBehaviour;
+
+        [Provide]
+        private ILevelSpawnRules ProvideLevelSpawnRules() => asteroidsConfig;
+
+        [Provide]
+        private AsteroidsConfig ProvideAsteroidsConfig() => asteroidsConfig;
 
         [Provide]
         public IAsteraX ProvideAsteraX() => manager;

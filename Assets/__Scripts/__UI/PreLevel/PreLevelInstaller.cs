@@ -13,9 +13,6 @@ namespace Course.UI
         [Inject] 
         private ILevel _level;
 
-        [Inject] 
-        private IAsteraX _asteraX;
-        
         public void AwakeInitialize()
         {
 
@@ -23,7 +20,7 @@ namespace Course.UI
 
         public void StartInitialize()
         {
-            preLevelUI.Initialize(_level,_asteraX,_level.StartNextLevel);
+            preLevelUI.Initialize(_level, _level.StartNextLevel);
         }
 
         private void Awake()

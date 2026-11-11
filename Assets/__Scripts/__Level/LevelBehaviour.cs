@@ -2,6 +2,7 @@ using System;
 using Course.Core;
 using Course.Utility.Events;
 using UnityEngine;
+using Utility.DependencyInjection;
 
 namespace Course.Level
 {
@@ -17,37 +18,30 @@ namespace Course.Level
         // Expose the current level index as a read-only property.
         public int CurrentLevel { get; private set; }
 
-        /// <summary>
-        /// Call this once at the very beginning (e.g. in a “GameInstaller” or Awake of some Bootstrap
-        /// script) to set the starting level. It will immediately fire OnLevelStarted(startLevel).
-        /// </summary>
+        public SpawnRule? CurrentSpawnRule { get; private set; }
+
+        [Inject]
+        private ILevelSpawnRules _spawnRules;
+
         public void Initialize(int startLevel)
         {
             CurrentLevel = startLevel;
+            CurrentSpawnRule = null;
         }
 
-        /// <summary>
-        /// Call this whenever the player has cleared all asteroids in the current level.
-        /// It first fires OnLevelCleared(currentLevel), then increments and fires OnLevelStarted(newLevel).
-        /// </summary>
         public void LevelCleared()
         {
-            // 1) Notify listeners that level CurrentLevel has just been cleared
             OnLevelCleared?.Invoke();
-
-            // 2) Bump to the next level
             CurrentLevel++;
-
-            // 3) Notify listeners that level CurrentLevel has started
-            RaisePreLevel();
+            EnterPreLevel();
         }
-        
-        private void RaisePreLevel()
+
+        public void EnterPreLevel()
         {
-            EventBus<GameStateChangedEvent>.Raise(
-                new GameStateChangedEvent(GameState.preLevel)
-            );
+            CurrentSpawnRule = _spawnRules.PrepareLevel(CurrentLevel);
+
             OnPreLevel?.Invoke();
+            EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(GameState.preLevel));
         }
         
         public void StartNextLevel()

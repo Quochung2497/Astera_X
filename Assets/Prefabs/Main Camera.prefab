@@ -152,6 +152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   score: {fileID: 0}
   playerShipConfig: {fileID: 11400000, guid: 99949a6d85e4a4c4c8aebb00f36fccde, type: 2}
+  asteroidsConfig: {fileID: 11400000, guid: 1122c0f3a74fd19428d5f189cbd23ce5, type: 2}
   levelBehaviour: {fileID: 0}
   manager: {fileID: 0}
   achievementManager: {fileID: 0}
@@ -195,8 +196,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6315b3aebf8ea104e813d2f9a4214758, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <asteroidsSO>k__BackingField: {fileID: 11400000, guid: 1122c0f3a74fd19428d5f189cbd23ce5,
-    type: 2}
   anchor: {fileID: 0}
 --- !u!114 &8323123358747573731
 MonoBehaviour:
@@ -210,7 +209,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3391061f1335552479f4d2048aaa5430, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asteroidsConfig: {fileID: 11400000, guid: 1122c0f3a74fd19428d5f189cbd23ce5, type: 2}
   unityServicesConfig: {fileID: 11400000, guid: bab9c2611a1dc644ea90094fe09642e6,
     type: 2}
 --- !u!114 &965974792178988003

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.RemoteConfig;
@@ -9,57 +8,37 @@ namespace Course.Services.Unity
 {
     public static class UnityRemoteConfig
     {
-        /// <summary>
-        /// Fired once a fresh config payload has been pulled down.
-        /// </summary>
-        public static event Action<ConfigResponse> FetchCompleted;
+        private static Task<(bool Succeeded, string Json)> _pendingFetch;
 
-        /// <summary>
-        /// Has InitializeAsync() completed (and auth/sign-in succeeded)?
-        /// </summary>
-        public static bool IsReady { get; private set; }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void Reset() => _pendingFetch = null;
 
-        /// <summary>
-        /// Call this once at startup (e.g. in your Bootstrap) before any FetchConfigs().
-        /// </summary>
-        public static async Task InitializeAsync()
+        public static Task<(bool Succeeded, string Json)> FetchSpawnRulesAsync()
+        {
+            if (_pendingFetch is { IsCompleted: false })
+                return _pendingFetch;
+
+            return _pendingFetch = FetchAsync();
+        }
+
+        private static async Task<(bool Succeeded, string Json)> FetchAsync()
         {
             await UnityServices.InitializeAsync();
 
             if (!AuthenticationService.Instance.IsSignedIn)
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-            RemoteConfigService.Instance.FetchCompleted += OnRemoteFetchCompleted;
-
-            IsReady = true;
-            Debug.Log("[RC] Initialized & signed in.");
-        }
-
-        /// <summary>
-        /// Kick off a fetch; when it arrives you’ll get the FetchCompleted event.
-        /// </summary>
-        public static void FetchConfigs()
-        {
-            if (!IsReady)
-            {
-                Debug.LogWarning("[RC] Not ready – forgot InitializeAsync?");
-                return;
-            }
-
-            var userAttributes = new UserAttributes();
-            var appAttributes  = new AppAttributes();
-
-            RemoteConfigService.Instance.FetchConfigs(userAttributes, appAttributes);
+            var service = RemoteConfigService.Instance;
             Debug.Log("[RC] Fetch requested.");
+            var config = await service.FetchConfigsAsync(new UserAttributes(), new AppAttributes());
+            var status = service.requestStatus;
+            Debug.Log($"[RC] Fetch complete: {config.origin} status={status}");
+
+            bool succeeded = status == ConfigRequestStatus.Success && config.origin == ConfigOrigin.Remote;
+            return (succeeded, succeeded ? config.GetJson("levelSpawnRules", string.Empty) : null);
         }
 
-        private static void OnRemoteFetchCompleted(ConfigResponse response)
-        {
-            Debug.Log($"[RC] Fetch complete: {response.requestOrigin}  success={response.status}");
-            FetchCompleted?.Invoke(response);
-        }
-        
         public struct UserAttributes { }
-        public struct AppAttributes  { }
+        public struct AppAttributes { }
     }
 }

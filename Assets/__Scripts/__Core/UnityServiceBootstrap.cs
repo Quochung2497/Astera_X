@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Course.Control;
 using Course.ScriptableObject;
@@ -7,7 +8,6 @@ using Course.Services.Achievements;
 using Course.Services.Unity;
 using Course.Utility;
 using Course.Utility.Events;
-using Unity.Services.RemoteConfig;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Utility.DependencyInjection;
@@ -17,6 +17,8 @@ namespace Course.Core
 {
     public class UnityServiceBootstrap : PrivateSingleton<UnityServiceBootstrap>
     {
+        private const float RemoteConfigRetryDelay = 3f;
+
         private int   _currentLevel;
         private int   _lastScore;
         private bool  _didHitHighThisSession;
@@ -29,8 +31,9 @@ namespace Course.Core
         // TODO: Testing for now
         private Vector2 _restingTilt;
 
-        [SerializeField] private AsteroidsConfig asteroidsConfig;
         [SerializeField] private UnityServicesConfig unityServicesConfig;
+
+        [Inject] private AsteroidsConfig _asteroidsConfig;
         [Inject] private IInputResolver _inputResolver;
         
         [Inject] private IAchievementManager _achievementManager;
@@ -70,16 +73,8 @@ namespace Course.Core
                 Debug.LogWarning($"[Analytics] Initialization failed; gameplay remains local: {e.Message}");
             }
 
-            try
-            {
-                await UnityRemoteConfig.InitializeAsync();
-                UnityRemoteConfig.FetchCompleted += OnRemoteConfigFetched;
-                UnityRemoteConfig.FetchConfigs();
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"[RC] Initialization failed; keeping local spawn rules: {e.Message}");
-            }
+            if (this != null)
+                FetchRemoteSpawnRules(allowRetry: true);
         }
 
         private void Update()
@@ -119,11 +114,6 @@ namespace Course.Core
             // TODO: Testing for now
             Vector3 a = Accelerometer.current?.acceleration.ReadValue() ?? Vector3.zero;
             _restingTilt = new Vector2(a.x, a.y);
-        }
-
-        private void OnDestroy()
-        {
-            UnityRemoteConfig.FetchCompleted -= OnRemoteConfigFetched;
         }
 
         #endregion
@@ -218,17 +208,45 @@ namespace Course.Core
 
         #region RemoteConfig
 
-        private void OnRemoteConfigFetched(ConfigResponse resp)
+        private async void FetchRemoteSpawnRules(bool allowRetry)
         {
-            if (asteroidsConfig == null || resp.requestOrigin == ConfigOrigin.Default)
-                return;
+            if (_asteroidsConfig == null) return;
 
             try
             {
-                string json = RemoteConfigService.Instance.appConfig.GetJson("levelSpawnRules");
-                if (string.IsNullOrWhiteSpace(json))
-                    return;
+                var result = await UnityRemoteConfig.FetchSpawnRulesAsync();
+                if (this == null) return;
 
+                if (result.Succeeded)
+                {
+                    QueueRemoteSpawnRules(result.Json);
+                    return;
+                }
+
+                Debug.LogWarning("[RC] Fetch failed; keeping the current spawn rules.");
+            }
+            catch (Exception e)
+            {
+                if (this == null) return;
+                Debug.LogWarning($"[RC] Fetch failed; keeping the current spawn rules: {e.Message}");
+            }
+
+            if (allowRetry)
+                StartCoroutine(RetryRemoteSpawnRules());
+        }
+
+        private IEnumerator RetryRemoteSpawnRules()
+        {
+            yield return new WaitForSecondsRealtime(RemoteConfigRetryDelay);
+            FetchRemoteSpawnRules(allowRetry: false);
+        }
+
+        private void QueueRemoteSpawnRules(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json)) return;
+
+            try
+            {
                 var wrapper = JsonUtility.FromJson<LevelSpawnRuleArrayWrapper>($"{{\"items\":{json}}}");
                 if (wrapper?.items == null || wrapper.items.Length == 0)
                     throw new ArgumentException("levelSpawnRules must contain at least one level.");
@@ -246,12 +264,12 @@ namespace Course.Core
                         throw new ArgumentException("levelSpawnRules contains invalid or duplicate level data.");
                 }
 
-                asteroidsConfig.SetLevelSpawnRules(wrapper.items);
-                Debug.Log($"[RC] Applied {wrapper.items.Length} spawn rules from {resp.requestOrigin}.");
+                _asteroidsConfig.QueueRemoteSpawnRules(wrapper.items);
+                Debug.Log($"[RC] Received {wrapper.items.Length} spawn rules for the next Pre-Level.");
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[RC] Keeping local spawn rules: {e.Message}");
+                Debug.LogWarning($"[RC] Keeping the current spawn rules: {e.Message}");
             }
         }
 
