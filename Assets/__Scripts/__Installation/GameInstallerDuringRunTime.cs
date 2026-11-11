@@ -2,6 +2,7 @@ using Course.Attribute;
 using Course.Control;
 using Course.Core;
 using Course.Level;
+using Course.ScriptableObject;
 using Course.Services;
 using Course.Services.Achievements;
 using Course.Services.SaveService;
@@ -18,7 +19,7 @@ namespace Course.Installation
         [SerializeField]
         private ScoreBehaviour score;
         [SerializeField]
-        private HealthBehaviour health;
+        private PlayerShipConfig playerShipConfig;
 
         [SerializeField] private LevelBehaviour levelBehaviour;
         [SerializeField] private AsteraXManager manager;
@@ -34,6 +35,8 @@ namespace Course.Installation
         [SerializeField] private ShopManager shopManager;
 
         private InputResolver _inputResolver;
+        private IDamageable _playerDamageable;
+        private IHealthBehaviour _playerHealth;
 
         private void Awake()
         {
@@ -54,8 +57,17 @@ namespace Course.Installation
         
         [Provide]
         public IScoreBehaviour ProvideScore() => score;
+
         [Provide]
-        public IHealthBehaviour ProvideHealth() => health;
+        private PlayerShipConfig ProvidePlayerShipConfig() => playerShipConfig;
+
+        [Provide]
+        private IDamageable ProvidePlayerDamageable() =>
+            _playerDamageable ??= new Damageable(playerShipConfig.JumpCount);
+
+        [Provide]
+        public IHealthBehaviour ProvideHealth() =>
+            _playerHealth ??= new PlayerHealth(ProvidePlayerDamageable());
 
         [Provide]
         public ILevel ProvideLevel() => levelBehaviour;

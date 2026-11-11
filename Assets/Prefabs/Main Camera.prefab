@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   score: {fileID: 0}
-  health: {fileID: 0}
+  playerShipConfig: {fileID: 11400000, guid: 99949a6d85e4a4c4c8aebb00f36fccde, type: 2}
   levelBehaviour: {fileID: 0}
   manager: {fileID: 0}
   achievementManager: {fileID: 0}

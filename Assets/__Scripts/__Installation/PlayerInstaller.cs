@@ -12,9 +12,7 @@ namespace Course.Installation
 {
     public class PlayerInstaller : MonoBehaviour,IInstaller
     {
-        [Header("PlayerShip Config")] 
-        [SerializeField]
-        private PlayerShipConfig config;
+        [Header("Player Stats")]
         [SerializeField]
         private StatsProvider statsProvider = null;
 
@@ -23,8 +21,6 @@ namespace Course.Installation
         [Header("Player Components")]
         [SerializeField] 
         PlayerShipBehaviour playerController;
-        [SerializeField]
-        HealthBehaviour healthBehaviour;
         [SerializeField]
         ScoreBehaviour scoreBehaviour;
         [SerializeField]
@@ -42,11 +38,13 @@ namespace Course.Installation
         
         // Cache
         private IMover _mover;
-        private IDamageable _damageable;
         private ITiltWithVelocity _tiltWithVelocity;
         private Rigidbody _rb;
         private PlayerShipBehaviour.PlayerBuilder _builder;
         
+        [Inject] private PlayerShipConfig _config;
+        [Inject] private IDamageable _damageable;
+        [Inject] private IHealthBehaviour _health;
         [Inject] private IInputReader _inputReader;
 
         [Inject]
@@ -56,17 +54,15 @@ namespace Course.Installation
 
         public void AwakeInitialize()
         {
-            _damageable = new Damageable(config.JumpCount);
             statsProvider.RegisterStatInstance(Stats.Health, _damageable);
-            healthBehaviour?.Initialize(_damageable);
             
-            statsProvider?.RegisterStat(Stats.Score, config.Score);
+            statsProvider?.RegisterStat(Stats.Score, _config.Score);
             scoreBehaviour?.Initialize(statsProvider.Get(Stats.Score));
 
-            statsProvider?.RegisterStat(Stats.Speed, config.MoveSpeed);
-            jumpBehaviour?.Initialize(healthBehaviour,_manager);
+            statsProvider?.RegisterStat(Stats.Speed, _config.MoveSpeed);
+            jumpBehaviour?.Initialize(_health, _manager);
             
-            turretInstaller?.Initialize(healthBehaviour,jumpBehaviour);
+            turretInstaller?.Initialize(_health, jumpBehaviour);
             _customizationManager.OnApplyShipPart += HandleCustomizationChanged;
         }
 
@@ -76,9 +72,9 @@ namespace Course.Installation
             _rb = GetComponent<Rigidbody>();
             _tiltWithVelocity = new TiltWithVelocity(
                 transform,
-                config.MaxTiltAngle,
-                config.TiltSpeed,
-                config.MoveSpeed
+                _config.MaxTiltAngle,
+                _config.TiltSpeed,
+                _config.MoveSpeed
             ); // TODO: Refactor to configure
             disappearEffect?.Initialize(jumpBehaviour);
             reAppearEffect?.Initialize(jumpBehaviour);
