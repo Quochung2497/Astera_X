@@ -5,14 +5,13 @@ using System.Threading.Tasks;
 using Course.Control;
 using Course.ScriptableObject;
 using Course.Services.Achievements;
-using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
 using Utility.DependencyInjection;
 
 namespace Course.Services.SaveService
 {
-    public class SaveManager : PrivateSingleton<SaveManager>, ISaveManager
+    public class SaveManager : MonoBehaviour, ISaveManager
     {
         private ISaveService _service;
         private EventBinding<GameStateChangedEvent> _gameOverBinding;
@@ -61,8 +60,8 @@ namespace Course.Services.SaveService
             foreach (var s in savables)
             {
                 var task = s.Save(_service);
-                // wait until that Task completes
-                yield return new WaitUntil(() => task.IsCompleted);
+                if (!task.IsCompleted)
+                    yield return new WaitUntil(() => task.IsCompleted);
                 if (task.Exception != null)
                     Debug.LogError($"Save failed on {s.GetType().Name}: {task.Exception}");
             }
@@ -87,10 +86,8 @@ namespace Course.Services.SaveService
 
         #region Unity API
 
-        protected override void Awake()
+        private void Awake()
         {
-            base.Awake();
-            DontDestroyOnLoad(gameObject);
             _service = new SaveService();
         }
 
@@ -110,13 +107,19 @@ namespace Course.Services.SaveService
 
         private void OnDestroy()
         {
-            if(_achievementManager == null || _customizationManager == null)
-                return;
-            _customizationManager.OnCustomizationChanged -= HandleSave;
-            _customizationManager.OnLoaded      -= _onCustomizationLoaded;
-            _achievementManager.OnUnlocked -= HandleSaveOnUnlock;
-            _achievementManager.OnHighScore -= HandleHighScoreSave;
             EventBus<GameStateChangedEvent>.Deregister(_gameOverBinding);
+
+            if (_customizationManager != null)
+            {
+                _customizationManager.OnCustomizationChanged -= HandleSave;
+                _customizationManager.OnLoaded -= _onCustomizationLoaded;
+            }
+
+            if (_achievementManager != null)
+            {
+                _achievementManager.OnUnlocked -= HandleSaveOnUnlock;
+                _achievementManager.OnHighScore -= HandleHighScoreSave;
+            }
         }
         
         private void OnGameStateChanged(GameStateChangedEvent evt)
