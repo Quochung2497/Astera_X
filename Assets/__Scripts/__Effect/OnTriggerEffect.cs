@@ -1,12 +1,10 @@
-using Course.Attribute;
 using UnityEngine;
 
 namespace Course.Effect
 {
-    [RequireComponent(typeof(IHealthBehaviour))]
     public abstract class OnTriggerEffect<T> : MonoBehaviour, ITriggerEffect<T> where T : class
     {
-        [Header("Which particle‐effect provider to call when this object dies")]
+        [Header("Particle Effect")]
         [SerializeField] protected ParticlesEffectProvider particlesEffectContainer;
 
         protected T _owner;
@@ -14,10 +12,7 @@ namespace Course.Effect
         protected bool _initialized = false;
 
         /// <summary>
-        /// Call this exactly once (after Awake but before any death can occur),
-        /// passing in the IHealthBehaviour that owns this object.
-        /// E.g. in Asteroid.Setup(), you will do:
-        ///     _deathEffect.Initialize(_health, this);
+        /// Assigns the owner that supplies the trigger for this effect.
         /// </summary>
         public virtual void Initialize(T owner)
         {
@@ -31,8 +26,7 @@ namespace Course.Effect
         protected virtual void OnDisable() { }
 
         /// <summary>
-        /// This is called whenever the IHealthBehaviour fires its OnDie event.
-        /// We compute a “scaleFactor” (via the subclass override) and call the provider.
+        /// Plays the configured effect using the scale supplied by the subclass.
         /// </summary>
         protected virtual void HandleOnTriggerEffect()
         {

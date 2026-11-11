@@ -4,18 +4,13 @@ using UnityEngine;
 
 namespace Course.Effect
 {
-    public class AsteroidOnDeathEffect : OnTriggerEffect<IHealthBehaviour>
+    public class AsteroidOnDeathEffect : OnTriggerEffect<Asteroid>
     {
-        // Private Fields
-        private IAsteroid _asteroid;
-
-        // Public
-        public void Initialize(IHealthBehaviour health, IAsteroid asteroid)
+        public override void Initialize(Asteroid asteroid)
         {
             if (_initialized) return;
 
-            _asteroid ??= asteroid;
-            base.Initialize(health);
+            base.Initialize(asteroid);
             _initialized = true;
 
             if (isActiveAndEnabled)
@@ -24,33 +19,21 @@ namespace Course.Effect
 
         protected override void OnEnable()
         {
-            if (!_initialized || _owner == null)
-                return;
-            _owner.OnDie += HandleOnTriggerEffect;
+            if (_initialized)
+                _owner.OnDie += HandleOnTriggerEffect;
         }
-
 
         protected override void OnDisable()
         {
-            if (!_initialized || _owner == null)
-                return;
-            _owner.OnDie -= HandleOnTriggerEffect;
-        }
-
-        protected override void HandleOnTriggerEffect()
-        {
-            if (particlesEffectContainer == null || _asteroid == null
-                || (_asteroid is Object unityObject && unityObject == null))
-                return;
-
-            float scaleFactor = GetScaleFactor();
-            particlesEffectContainer?.TriggerEffect(transform.position, Mathf.Clamp01(scaleFactor));
+            if (_initialized)
+                _owner.OnDie -= HandleOnTriggerEffect;
         }
 
         protected override float GetScaleFactor()
         {
-            return (float)_asteroid.size / AsteraXManager.TryGetInstance()
+            float scaleFactor = (float)_owner.size / AsteraXManager.TryGetInstance()
                 .asteroidsSO.GetGlobalMaxParentSize();
+            return Mathf.Clamp01(scaleFactor);
         }
     }
 }

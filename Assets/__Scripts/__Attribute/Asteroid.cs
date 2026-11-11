@@ -1,6 +1,6 @@
-﻿using Course.Control.Asteroid;
+﻿using System;
+using Course.Control.Asteroid;
 using Course.Core;
-using Course.Effect;
 using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
@@ -13,6 +13,8 @@ namespace Course.Attribute
     {
         public int size { get; private set; }
         public int damage { get; private set; }
+
+        public event Action OnDie;
         
         #region Private Fields
 
@@ -22,13 +24,9 @@ namespace Course.Attribute
         private IAsteraX _asteraXManager;
         private IAsteroidBehaviour _asteroidBehaviour;
         private Collider _collider; // Used to prevent multiple collisions in a single frame
-        private IHealthBehaviour _health; // Used to handle damage logic if needed
-        private IDamageable _damageable;
-        private AsteroidOnDeathEffect _asteroidOnDeathEffect;
-        private int                 _scoreValue;
+        private IAsteroidHealth _health;
         private bool _isReleased;
         private bool _isConfigured;
-        private bool _awardScoreOnDeath;
 
         #endregion
     
@@ -73,15 +71,13 @@ namespace Course.Attribute
 
         #region Initialization
 
-        public void Initialize(OffScreenWrapper wrapper, IHealthBehaviour health, AsteroidOnDeathEffect asteroidOnDeathEffect)
+        public void Initialize(OffScreenWrapper wrapper, IAsteroidHealth health)
         {
             _rb = GetComponent<Rigidbody>();
             _wrapper = wrapper;
             _collider = GetComponent<Collider>();
             _asteraXManager = AsteraXManager.TryGetInstance();
             _health = health;
-            _asteroidOnDeathEffect = asteroidOnDeathEffect;
-            _asteroidOnDeathEffect?.Initialize(_health, this);
             _asteroidBehaviour = new AsteroidBehaviour(
                 _asteraXManager, 
                 (frag, injectedHp) => frag.Setup(injectedHp),
@@ -126,7 +122,7 @@ namespace Course.Attribute
         /// </summary>
         public void SetPointValue(int pts)
         {
-            _scoreValue = Mathf.Max(0, pts);
+            _health.SetPointValue(pts);
         }
 
         public void SetDamageValue(int amount)
@@ -141,13 +137,8 @@ namespace Course.Attribute
         public void Setup(int hp)
         {
             if (!Application.isPlaying) return;
-            _awardScoreOnDeath = false;
             transform.localScale = Vector3.one * size * _asteraXManager.asteroidsSO.asteroidScale;
-            if (_damageable == null)
-                _damageable = new Damageable(Mathf.Max(1, hp));
-            else
-                _damageable.SetMaxValue(Mathf.Max(1, hp));
-            _health?.Initialize(_damageable);
+            _health.ResetHealth(hp);
             if (parentIsAsteroid)
             {
                 InitAsteroidChild();
@@ -163,22 +154,12 @@ namespace Course.Attribute
 
         public bool TryHitByBullet(float amount)
         {
-            if (!_isConfigured || _health.IsDead || amount <= 0)
-                return false;
-
-            _awardScoreOnDeath = true;
-            _health.ChangeValue(-amount);
-            return true;
+            return _isConfigured && ApplyHitResult(_health.HitByBullet(amount));
         }
 
         public bool TryDestroyFromPlayerCollision()
         {
-            if (!_isConfigured || _health.IsDead)
-                return false;
-
-            _awardScoreOnDeath = false;
-            _health.ChangeValue(-_health.Value);
-            return true;
+            return _isConfigured && ApplyHitResult(_health.HitByPlayer());
         }
         
         #endregion
@@ -255,14 +236,24 @@ namespace Course.Attribute
         /// <param name="coll">The collision data.</param>
         private void OnHitInternal(Collision coll) {}
 
-        private void HandleDeath()
+        private bool ApplyHitResult((bool Accepted, bool Died, int? AwardedPoints) result)
+        {
+            if (result.Died)
+                HandleDeath(result.AwardedPoints);
+
+            return result.Accepted;
+        }
+
+        private void HandleDeath(int? awardedPoints)
         {
             _collider.enabled = false;
 
             // Detach living fragments before deactivating their parent.
             _asteroidBehaviour.OnDeath(this);
-            if (_awardScoreOnDeath)
-                EventBus<AddScore>.Raise(new AddScore(_scoreValue));
+            if (awardedPoints.HasValue)
+                EventBus<AddScore>.Raise(new AddScore(awardedPoints.Value));
+
+            OnDie?.Invoke();
             Release();
         }
 
@@ -279,13 +270,11 @@ namespace Course.Attribute
         private void OnEnable()
         {
             _isReleased = false;
-            _health.OnDie += HandleDeath;
         }
 
         private void OnDisable()
         {
             Reset();
-            _health.OnDie -= HandleDeath;
         }
 
         #endregion

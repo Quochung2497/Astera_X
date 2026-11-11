@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 5178467095108848621}
   - component: {fileID: 6451990053796973195}
   - component: {fileID: 585498447990338806}
-  - component: {fileID: -8333622056911581219}
   - component: {fileID: 1548097458761846097}
   - component: {fileID: -7988852106901167197}
   m_Layer: 10
@@ -167,18 +166,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef542e6eb0936b644a2f1b01a66a87af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &-8333622056911581219
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1669921439223048}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04c880e346de10748a930263ef16a99b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1548097458761846097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,5 +194,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   asteroid: {fileID: 585498447990338806}
   offScreenWrapper: {fileID: 6451990053796973195}
-  healthBehaviour: {fileID: -8333622056911581219}
   asteroidOnDeathEffect: {fileID: 1548097458761846097}

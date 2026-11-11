@@ -1,4 +1,5 @@
 ﻿using Course.Attribute;
+using Course.Control.Asteroid;
 using Course.Core;
 using Course.Effect;
 using UnityEngine;
@@ -10,12 +11,13 @@ namespace Course.Installation
     {
         [SerializeField] private Asteroid asteroid;
         [SerializeField] private OffScreenWrapper offScreenWrapper;
-        [SerializeField] private HealthBehaviour healthBehaviour;
         [SerializeField] private AsteroidOnDeathEffect asteroidOnDeathEffect;
         
         public void AwakeInitialize()
         {
-            asteroid.Initialize(offScreenWrapper, healthBehaviour, asteroidOnDeathEffect);
+            var health = new AsteroidHealth(hp => new Damageable(hp));
+            asteroid.Initialize(offScreenWrapper, health);
+            asteroidOnDeathEffect?.Initialize(asteroid);
         }
 
         public void StartInitialize() { }
