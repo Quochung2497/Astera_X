@@ -184,6 +184,14 @@ namespace Course.Services.Achievements
             _scoreBehaviour.OnValueChanged -= HandleScoreChanged;
         }
 
+        private void OnDestroy()
+        {
+            if (_states == null) return;
+
+            foreach (var state in _states)
+                state.Uninitialize();
+        }
+
         #endregion
     }
     

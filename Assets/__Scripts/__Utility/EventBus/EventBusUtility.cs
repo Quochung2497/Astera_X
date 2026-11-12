@@ -92,7 +92,7 @@ namespace Course.Utility.Events
         }
 
         /// <summary>
-        /// Clears all event buses by invoking their internal clear methods.
+        /// Clears all event buses by invoking their deregistration methods.
         /// Ensures that all event buses are reset to their initial state.
         /// </summary>
         public static void ClearAllBuses()
@@ -100,7 +100,7 @@ namespace Course.Utility.Events
             for (int i = 0; i < EventBusTypes.Count; i++)
             {
                 var busType = EventBusTypes[i];
-                var clearMethod = busType.GetMethod("Clear", BindingFlags.Static | BindingFlags.NonPublic);
+                var clearMethod = busType.GetMethod(nameof(EventBus<IEvent>.DeregisterAll), BindingFlags.Static | BindingFlags.Public);
                 clearMethod?.Invoke(null, null);
             }
         }

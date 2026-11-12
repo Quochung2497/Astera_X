@@ -54,25 +54,54 @@ namespace Course.ScriptableObject
             var bindingType = typeof(EventBinding<>).MakeGenericType(_eventType);
             _binding = Activator.CreateInstance(bindingType, new object[]{ _handler });
 
-            // 5) Register to the bus
-            _reg.Invoke(null, new object[]{ _binding });
+            if (OnRaised != null)
+                RegisterBinding();
         }
 
         private void OnDisable()
         {
-            if (_dereg != null && _binding != null)
-                _dereg.Invoke(null, new object[]{ _binding });
+            DeregisterBinding();
+            _binding = null;
         }
 
-        // Called by EventBus<T>.Register whenever an event fires
+        private void RegisterBinding()
+        {
+            if (_binding != null)
+                _reg.Invoke(null, new[] { _binding });
+        }
+
+        private void DeregisterBinding()
+        {
+            if (_binding != null)
+                _dereg?.Invoke(null, new[] { _binding });
+        }
+
+        // Called by the EventBus binding when an event is raised.
         protected void Raise<TEvent>(TEvent evt)
             where TEvent : IEvent
         {
             OnRaised?.Invoke(evt);
         }
 
-        public event Action<IEvent> OnRaised;
-        public void Subscribe(Action<IEvent> h)   => OnRaised += h;
-        public void Unsubscribe(Action<IEvent> h) => OnRaised -= h;
+        private event Action<IEvent> OnRaised;
+
+        public void Subscribe(Action<IEvent> handler)
+        {
+            if (handler == null) return;
+
+            if (OnRaised == null)
+                RegisterBinding();
+
+            OnRaised += handler;
+        }
+
+        public void Unsubscribe(Action<IEvent> handler)
+        {
+            if (OnRaised == null) return;
+
+            OnRaised -= handler;
+            if (OnRaised == null)
+                DeregisterBinding();
+        }
     }
 }
