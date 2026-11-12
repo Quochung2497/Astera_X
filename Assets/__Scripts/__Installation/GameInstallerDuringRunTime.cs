@@ -36,6 +36,7 @@ namespace Course.Installation
         
         [SerializeField] private ShopManager shopManager;
 
+        private GameStateModel _gameState;
         private InputResolver _inputResolver;
         private IDamageable _playerDamageable;
         private IHealthBehaviour _playerHealth;
@@ -50,6 +51,9 @@ namespace Course.Installation
             if (mobileQuality >= 0 && QualitySettings.GetQualityLevel() != mobileQuality)
                 QualitySettings.SetQualityLevel(mobileQuality);
         }
+
+        [Provide]
+        private GameStateModel ProvideGameState() => _gameState ??= new GameStateModel();
 
         [Provide]
         public IInputResolver ProvideInputResolver() => GetInputResolver();

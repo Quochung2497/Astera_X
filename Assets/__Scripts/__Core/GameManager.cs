@@ -2,23 +2,18 @@ using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Utility.DependencyInjection;
 
 namespace Course.Core
 {
     public class GameManager : PrivateSingleton<GameManager>
     {
-        #region Serialized Fields
-
-        /// <summary>
-        /// The current state of the game.
-        /// Uses the <see cref="GameState"/> enum.
-        /// </summary>
-        [EnumFlag]
-        public GameState currentStates { get; private set; } = GameState.none;
-
-        #endregion
+        public GameState currentStates => _gameState.CurrentState;
 
         #region Private Fields
+
+        [Inject]
+        private GameStateModel _gameState;
 
         /// <summary>
         /// Event binding for handling game state changes.
@@ -34,9 +29,9 @@ namespace Course.Core
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
         }
 
-        public void TogglePause() => ToggleBetween(GameState.level, GameState.paused);
+        public void TogglePause() => RequestState(_gameState.GetPauseTarget());
 
-        public void ToggleShop() => ToggleBetween(GameState.level, GameState.shop);
+        public void ToggleShop() => RequestState(_gameState.GetShopTarget());
 
         #endregion
 
@@ -48,8 +43,7 @@ namespace Course.Core
         /// </summary>
         private void OnEnable()
         {
-            _onGameStateChanged = new EventBinding<GameStateChangedEvent>(e =>
-                SetState(e.NewState));
+            _onGameStateChanged = new EventBinding<GameStateChangedEvent>(HandleStateChanged);
             EventBus<GameStateChangedEvent>.Register(_onGameStateChanged);
         }
 
@@ -81,43 +75,16 @@ namespace Course.Core
 
         #region Private Methods
 
-        private void ToggleBetween(GameState first, GameState second)
+        private void RequestState(GameState? target)
         {
-            GameState nextState;
-            if (currentStates == first)
-                nextState = second;
-            else if (currentStates == second)
-                nextState = first;
-            else
-                return;
-
-            EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(nextState));
+            if (target.HasValue)
+                EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(target.Value));
         }
 
-        /// <summary>
-        /// Sets the current game state and performs actions based on the new state.
-        /// </summary>
-        /// <param name="newState">The new game state to set.</param>
-        private void SetState(GameState newState)
+        private void HandleStateChanged(GameStateChangedEvent change)
         {
-            currentStates = newState;
-            switch (newState)
-            {
-                case GameState.mainMenu:
-                case GameState.paused:
-                case GameState.shop: 
-                    Time.timeScale = 0f;
-                    break;
-
-                case GameState.level:
-                case GameState.none:
-                    Time.timeScale = 1f;
-                    break;
-                
-                default:
-                    Time.timeScale = 1f;
-                    break;
-            }
+            _gameState.SetState(change.NewState);
+            Time.timeScale = _gameState.ShouldFreezeSimulation ? 0f : 1f;
         }
 
         #endregion
