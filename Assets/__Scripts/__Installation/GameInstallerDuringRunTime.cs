@@ -37,6 +37,7 @@ namespace Course.Installation
         [SerializeField] private ShopManager shopManager;
 
         private GameStateModel _gameState;
+        private ILevelProgression _levelProgression;
         private InputResolver _inputResolver;
         private IDamageable _playerDamageable;
         private IHealthBehaviour _playerHealth;
@@ -54,6 +55,13 @@ namespace Course.Installation
 
         [Provide]
         private GameStateModel ProvideGameState() => _gameState ??= new GameStateModel();
+
+        [Provide]
+        private IGameStateReader ProvideGameStateReader() => ProvideGameState();
+
+        [Provide]
+        private ILevelProgression ProvideLevelProgression() =>
+            _levelProgression ??= new LevelProgression(asteroidsConfig);
 
         [Provide]
         public IInputResolver ProvideInputResolver() => GetInputResolver();
@@ -79,9 +87,6 @@ namespace Course.Installation
 
         [Provide]
         public ILevel ProvideLevel() => levelBehaviour;
-
-        [Provide]
-        private ILevelSpawnRules ProvideLevelSpawnRules() => asteroidsConfig;
 
         [Provide]
         private AsteroidsConfig ProvideAsteroidsConfig() => asteroidsConfig;

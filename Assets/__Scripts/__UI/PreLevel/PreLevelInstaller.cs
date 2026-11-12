@@ -15,22 +15,14 @@ namespace Course.UI
 
         public void AwakeInitialize()
         {
-
-        }
-
-        public void StartInitialize()
-        {
             preLevelUI.Initialize(_level, _level.StartNextLevel);
         }
+
+        public void StartInitialize() { }
 
         private void Awake()
         {
             AwakeInitialize();
-        }
-
-        private void Start()
-        {
-            StartInitialize();
         }
     }
 }

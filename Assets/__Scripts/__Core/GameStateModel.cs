@@ -1,6 +1,6 @@
 namespace Course.Core
 {
-    internal sealed class GameStateModel
+    internal sealed class GameStateModel : IGameStateReader
     {
         public GameState CurrentState { get; private set; } = GameState.none;
 

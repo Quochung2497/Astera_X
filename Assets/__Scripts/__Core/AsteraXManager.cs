@@ -61,10 +61,13 @@ namespace Course.Core
         [Inject]
         private AsteroidsConfig _asteroidsConfig;
 
-        private GameManager _gameManager;
-        
+        [Inject]
+        private IGameStateReader _gameState;
+
+        [Inject]
+        private ILevelProgression _levelProgression;
+
         private bool _isSpawning = false;
-        private bool _checkForLevelClear;
 
         #endregion
 
@@ -104,8 +107,8 @@ namespace Course.Core
                 || (asteroid is Object unityObject && unityObject == null)
                 || asteroid.gameObject == null)
                 return;
-            if (_asteroids.Remove(asteroid) && _asteroids.Count == 0)
-                _checkForLevelClear = true;
+            if (_asteroids.Remove(asteroid))
+                _levelProgression.OnAsteroidRemoved(_asteroids.Count);
         }
 
         /// <summary>
@@ -167,7 +170,7 @@ namespace Course.Core
         private void HandleLevelStarted()
         {
             if (_isSpawning) return;
-            if (_gameManager != null && _gameManager.currentStates != GameState.level)
+            if (_gameState.CurrentState != GameState.level)
             {
                 return;
             }
@@ -185,7 +188,7 @@ namespace Course.Core
                 }
 
                 // If somehow we spawned nothing, still clear the level:
-                if (_asteroids.Count == 0)
+                if (_levelProgression.ShouldClearAfterSpawn(_asteroids.Count))
                 {
                     _levelDriver.LevelCleared();
                 }
@@ -279,29 +282,12 @@ namespace Course.Core
             }
         }
 
-        /// <summary>
-        /// Unity's Start method. Spawns initial parent asteroids.
-        /// </summary>
-        private void Start()
-        {
-            _gameManager = GameManager.TryGetInstance();
-        }
-
         private void LateUpdate()
         {
-            if (!_checkForLevelClear) return;
-
-            // Pause and shop defer the pending check until gameplay resumes.
-            if (_gameManager != null
-                && (_gameManager.currentStates == GameState.paused
-                    || _gameManager.currentStates == GameState.shop))
-                return;
-
-            _checkForLevelClear = false;
+            if (!_levelProgression.HasPendingClear) return;
 
             // Let every collision in this frame finish, including a possible player death.
-            if (_asteroids.Count == 0 && _levelDriver != null
-                && _gameManager != null && _gameManager.currentStates == GameState.level)
+            if (_levelProgression.TryResolveClear(_gameState.CurrentState, _asteroids.Count))
                 _levelDriver.LevelCleared();
         }
 

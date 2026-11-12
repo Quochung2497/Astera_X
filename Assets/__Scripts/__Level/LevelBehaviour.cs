@@ -15,30 +15,28 @@ namespace Course.Level
         // Event: fired when the current level is cleared (before incrementing).
         public event Action OnLevelCleared;
 
-        // Expose the current level index as a read-only property.
-        public int CurrentLevel { get; private set; }
+        public int CurrentLevel => _progression.CurrentLevel;
 
-        public SpawnRule? CurrentSpawnRule { get; private set; }
+        public SpawnRule? CurrentSpawnRule => _progression.CurrentSpawnRule;
 
         [Inject]
-        private ILevelSpawnRules _spawnRules;
+        private ILevelProgression _progression;
 
-        public void Initialize(int startLevel)
-        {
-            CurrentLevel = startLevel;
-            CurrentSpawnRule = null;
-        }
+        [Inject]
+        private IGameStateReader _gameState;
+
+        public void Initialize(int startLevel) => _progression.Initialize(startLevel);
 
         public void LevelCleared()
         {
             OnLevelCleared?.Invoke();
-            CurrentLevel++;
+            _progression.AdvanceLevel();
             EnterPreLevel();
         }
 
         public void EnterPreLevel()
         {
-            CurrentSpawnRule = _spawnRules.PrepareLevel(CurrentLevel);
+            _progression.PrepareCurrentLevel();
 
             OnPreLevel?.Invoke();
             EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(GameState.preLevel));
@@ -46,7 +44,7 @@ namespace Course.Level
         
         public void StartNextLevel()
         {
-            if(GameManager.TryGetInstance().currentStates != GameState.level)
+            if (_gameState.CurrentState != GameState.level)
                 EventBus<GameStateChangedEvent>.Raise(new GameStateChangedEvent(GameState.level));
             EventBus<LevelReached>.Raise(new LevelReached(CurrentLevel));
             OnLevelStarted?.Invoke();
