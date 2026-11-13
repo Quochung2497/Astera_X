@@ -35,7 +35,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
     #region Private Fields
 
     private IHealthBehaviour _healthBehaviour;
-    private IAsteraX        _asteraX;
+    private ISafeSpawnPositionProvider _safeSpawnPositionProvider;
     private Renderer[]      _renderers;
     private Collider        _collider;
     private List<Renderer> _renderersCache;
@@ -55,12 +55,15 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 
     #region Public Methods
 
-    internal void Initialize(IHealthBehaviour healthBehaviour, IAsteraX asteraX, PlayerActionState actions)
+    internal void Initialize(
+        IHealthBehaviour healthBehaviour,
+        ISafeSpawnPositionProvider safeSpawnPositionProvider,
+        PlayerActionState actions)
     {
         _healthBehaviour = healthBehaviour 
                            ?? throw new ArgumentNullException(nameof(healthBehaviour));
 
-        _asteraX = asteraX;
+        _safeSpawnPositionProvider = safeSpawnPositionProvider;
         _actions = actions;
         _collider  = GetComponent<Collider>();
         _gameStateGameOverevent = new GameStateChangedEvent(GameState.gameOver);
@@ -125,7 +128,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
         
         yield return new WaitForSeconds(jumpDelay);
 
-        Vector3 safePosition = _asteraX.GetSafeSpawnPosition(
+        Vector3 safePosition = _safeSpawnPositionProvider.GetSafeSpawnPosition(
             minPlayerSeparation,
             minAsteroidSeparation,
             20

@@ -25,6 +25,7 @@ namespace Course.Installation
 
         [SerializeField] private LevelBehaviour levelBehaviour;
         [SerializeField] private AsteraXManager manager;
+        [SerializeField] private ScreenBounds screenBounds;
 
         [SerializeField] private AchievementManager achievementManager;
         
@@ -93,6 +94,12 @@ namespace Course.Installation
 
         [Provide]
         public IAsteraX ProvideAsteraX() => manager;
+
+        [Provide]
+        private ISafeSpawnPositionProvider ProvideSafeSpawnPositionProvider() => manager;
+
+        [Provide]
+        private IScreenBounds ProvideScreenBounds() => screenBounds;
         
         [Provide]
         public IAchievementManager ProvideAchievementManager() => achievementManager;

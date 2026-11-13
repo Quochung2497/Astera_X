@@ -13,11 +13,5 @@ namespace Course.Core
         
         void AddAsteroid(IAsteroid asteroid);
         void RemoveAsteroid(IAsteroid asteroid);
-
-        public Vector3 GetSafeSpawnPosition(
-            float minDistAwayFromPlayer,
-            float minDistAwayFromAsteroids,
-            int maxAttempts
-        );
     }
 }

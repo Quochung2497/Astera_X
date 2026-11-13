@@ -1,6 +1,7 @@
 using System;
 using Course.Attribute;
 using Course.Core;
+using Course.ScriptableObject;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -20,10 +21,8 @@ namespace Course.Control.Asteroid
         /// </summary>
         private readonly Action<IAsteroid,int> _setup;
 
-        /// <summary>
-        /// Function to check if a given position is out of bounds.
-        /// </summary>
-        readonly Func<Vector3, bool> _isOutOfBounds;
+        private readonly IScreenBounds _screenBounds;
+        private readonly AsteroidsConfig _config;
 
         /// <summary>
         /// Reserved callback for asteroid collision handling.
@@ -40,17 +39,20 @@ namespace Course.Control.Asteroid
         /// </summary>
         /// <param name="manager">The AsteraX manager instance.</param>
         /// <param name="setupCallback">Callback for setting up asteroid attributes.</param>
-        /// <param name="isOutOfBoundsChecker">Function to check if a position is out of bounds.</param>
+        /// <param name="screenBounds">The scene bounds used to choose an initial direction.</param>
+        /// <param name="config">The asteroid velocity settings.</param>
         /// <param name="onHitCallback">Reserved callback for asteroid collision handling.</param>
         public AsteroidBehaviour(IAsteraX manager,
             Action<IAsteroid,int> setupCallback,
-            Func<Vector3,bool> isOutOfBoundsChecker,
+            IScreenBounds screenBounds,
+            AsteroidsConfig config,
             Action<IAsteroid, Collision> onHitCallback
             )
         {
             _manager = manager;
             _setup = setupCallback;
-            _isOutOfBounds   = isOutOfBoundsChecker;
+            _screenBounds = screenBounds;
+            _config = config;
             _onHitCallback = onHitCallback;
         }
         
@@ -111,32 +113,9 @@ namespace Course.Control.Asteroid
         /// <returns>A <see cref="VelocityInfo"/> struct containing the linear and angular velocity.</returns>
         public VelocityInfo CalculateInitialVelocity(Vector3 currentPosition, int size)
         {
-            Vector3 vel;
-            if (_isOutOfBounds(currentPosition))
-            {
-                vel = ((Vector3)Random.insideUnitCircle * 4f) - currentPosition;
-                vel.Normalize();
-            }
-            else
-            {
-                do
-                {
-                    vel = Random.insideUnitCircle;
-                    vel.Normalize();
-                }
-                while (Mathf.Approximately(vel.magnitude, 0f));
-            }
-
-            var so = _manager.asteroidsSO;
-            var speed = Random.Range(so.minVel, so.maxVel) / (float)size;
-            vel *= speed;
-
-            var ang = Random.insideUnitSphere * so.maxAngularVel;
-
-            return new VelocityInfo {
-                Linear  = vel,
-                Angular = ang
-            };
+            return AsteroidVelocityCalculator.Calculate(
+                currentPosition, size, _screenBounds.OOB(currentPosition),
+                _config.minVel, _config.maxVel, _config.maxAngularVel);
         }
 
         /// <summary>

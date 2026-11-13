@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 
 namespace Course.Core
 {
-    public class AsteraXManager : PrivateSingleton<AsteraXManager>, IAsteraX
+    public class AsteraXManager : PrivateSingleton<AsteraXManager>, IAsteraX, ISafeSpawnPositionProvider
     {
         #region Serialize Fields
         [Header("Set in Inspector")]
@@ -62,6 +62,9 @@ namespace Course.Core
         private AsteroidsConfig _asteroidsConfig;
 
         [Inject]
+        private IScreenBounds _screenBounds;
+
+        [Inject]
         private IGameStateReader _gameState;
 
         [Inject]
@@ -111,37 +114,33 @@ namespace Course.Core
                 _levelProgression.OnAsteroidRemoved(_asteroids.Count);
         }
 
+        #endregion
+
+        #region ISafeSpawnPositionProvider API
+
         /// <summary>
-        /// Finds a safe spawn position for an asteroid based on distance constraints.
+        /// Finds a landing position for the player's jump, with a random fallback.
         /// </summary>
-        /// <param name="minDistAwayFromPlayer">Minimum distance from the player.</param>
-        /// <param name="minDistAwayFromAsteroids">Minimum distance from other asteroids.</param>
-        /// <param name="maxAttempts">Maximum number of attempts to find a valid position.</param>
-        /// <param name="respawnDelay">Delay used to predict asteroid positions.</param>
-        /// <returns>A safe spawn position for the asteroid.</returns>
         public Vector3 GetSafeSpawnPosition(
             float minDistAwayFromPlayer,
             float minDistAwayFromAsteroids,
             int maxAttempts = 50)
         {
-            Vector3 pos = Vector3.zero;
-            float sqPlayer = minDistAwayFromPlayer * minDistAwayFromPlayer;
-            float sqAst = minDistAwayFromAsteroids * minDistAwayFromAsteroids;
+            float minPlayerDistanceSquared = minDistAwayFromPlayer * minDistAwayFromPlayer;
+            float minAsteroidDistanceSquared = minDistAwayFromAsteroids * minDistAwayFromAsteroids;
             var playerT = _player.transform;
 
             for (int i = 0; i < maxAttempts; i++)
             {
-                pos = ScreenBounds.TryGetInstance().RANDOM_ON_SCREEN_LOC;
-
-                // Check if the position is far enough from the player
-                if ((pos - playerT.position).sqrMagnitude < sqPlayer)
+                Vector3 pos = _screenBounds.RANDOM_ON_SCREEN_LOC;
+                if (SpawnPositionRules.IsTooCloseSquared(pos, playerT.position, minPlayerDistanceSquared))
                     continue;
 
                 // Check if the position is far enough from all asteroids
                 bool tooClose = false;
                 foreach (var a in _asteroids)
                 {
-                    if ((a.transform.position - pos).sqrMagnitude < sqAst)
+                    if (SpawnPositionRules.IsTooCloseSquared(a.transform.position, pos, minAsteroidDistanceSquared))
                     {
                         tooClose = true;
                         break;
@@ -155,7 +154,7 @@ namespace Course.Core
             }
 
             // Fallback to a random position if no valid position is found
-            return ScreenBounds.TryGetInstance().RANDOM_ON_SCREEN_LOC;
+            return _screenBounds.RANDOM_ON_SCREEN_LOC;
         }
 
         #endregion
@@ -218,9 +217,9 @@ namespace Course.Core
             Vector3 pos;
             do
             {
-                pos = ScreenBounds.TryGetInstance().RANDOM_ON_SCREEN_LOC;
+                pos = _screenBounds.RANDOM_ON_SCREEN_LOC;
             }
-            while ((pos - _player.transform.position).magnitude < MIN_ASTEROID_DIST_FROM_PLAYER_SHIP);
+            while (SpawnPositionRules.IsTooClose(pos, _player.transform.position, MIN_ASTEROID_DIST_FROM_PLAYER_SHIP));
 
             parent.transform.position = pos;
             parent.Setup(rule.parentHealth); 
@@ -257,7 +256,7 @@ namespace Course.Core
             foreach (var prefabGO in prefabs)
             {
                 var prefabAst = prefabGO.GetComponent<Asteroid>();
-                var asteroidPool = new AsteroidPool(prefabAst, asteroidParent);
+                var asteroidPool = new AsteroidPool(prefabAst, asteroidParent, _screenBounds, _asteroidsConfig);
                 _pools.Add(new AsteroidFactory(asteroidPool));
             }
             // TODO: Read the starting level from game settings.

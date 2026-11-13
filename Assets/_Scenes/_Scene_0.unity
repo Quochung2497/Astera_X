@@ -2225,6 +2225,11 @@ PrefabInstance:
       objectReference: {fileID: 6883121287057138537}
     - target: {fileID: 9026391602704415601, guid: 8c64eec13ebf02248980251137e887cb,
         type: 3}
+      propertyPath: screenBounds
+      value:
+      objectReference: {fileID: 8229828683591051485}
+    - target: {fileID: 9026391602704415601, guid: 8c64eec13ebf02248980251137e887cb,
+        type: 3}
       propertyPath: saveManager
       value: 
       objectReference: {fileID: 1542331296}
@@ -2348,6 +2353,18 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 49d710def16f2034ca4b7cbf5e0d7b7d, type: 3}
+--- !u!114 &8229828683591051485 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1011879105569959843, guid: 49d710def16f2034ca4b7cbf5e0d7b7d,
+    type: 3}
+  m_PrefabInstance: {fileID: 8229828683591051484}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7af555ed04c4d4a46afc51dad00fb3bb, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

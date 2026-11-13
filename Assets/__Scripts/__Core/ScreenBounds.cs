@@ -1,4 +1,3 @@
-using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
 
@@ -6,7 +5,7 @@ namespace Course.Core
 {
     [DefaultExecutionOrder(-1000)]
     [RequireComponent(typeof(BoxCollider))]
-    public class ScreenBounds : PrivateSingleton<ScreenBounds>,IScreenBounds
+    public class ScreenBounds : MonoBehaviour, IScreenBounds
     {
         #region Serialize Fields
 
@@ -64,9 +63,9 @@ namespace Course.Core
         {
             get
             {
-                var inst = TryGetInstance();
-                var min = inst._box.bounds.min;
-                var max = inst._box.bounds.max;
+                var bounds = _box.bounds;
+                var min = bounds.min;
+                var max = bounds.max;
                 var loc = new Vector3(Random.Range(min.x, max.x), Random.Range(min.y, max.y), 0);
                 return loc;
             }
@@ -79,17 +78,12 @@ namespace Course.Core
         {
             get
             {
-                if (TryGetInstance() == null)
+                if (_box == null)
                 {
-                    Debug.LogError("ScreenBounds.BOUNDS - ScreenBounds.S is null!");
+                    Debug.LogError("ScreenBounds.BOUNDS - BoxCollider is not initialized.");
                     return new Bounds();
                 }
-                if (TryGetInstance()._box == null)
-                {
-                    Debug.LogError("ScreenBounds.BOUNDS - ScreenBounds.S.boxColl is null!");
-                    return new Bounds();
-                }
-                return TryGetInstance()._box.bounds;
+                return _box.bounds;
             }
         }
 
@@ -100,7 +94,7 @@ namespace Course.Core
         /// <returns>True if the position is out of bounds; otherwise, false.</returns>
         public bool OOB(Vector3 worldPos)
         {
-            Vector3 locPos = TryGetInstance().transform.InverseTransformPoint(worldPos);
+            Vector3 locPos = transform.InverseTransformPoint(worldPos);
             float maxDist = Mathf.Max(Mathf.Abs(locPos.x), Mathf.Abs(locPos.y), Mathf.Abs(locPos.z));
             return (maxDist > 0.5f);
         }
@@ -112,7 +106,7 @@ namespace Course.Core
         /// <returns>1 if out of bounds positively, -1 if negatively, 0 if within bounds.</returns>
         public int OOB_X(Vector3 worldPos)
         {
-            Vector3 locPos = TryGetInstance().transform.InverseTransformPoint(worldPos);
+            Vector3 locPos = transform.InverseTransformPoint(worldPos);
             return OOB_(locPos.x);
         }
 
@@ -123,7 +117,7 @@ namespace Course.Core
         /// <returns>1 if out of bounds positively, -1 if negatively, 0 if within bounds.</returns>
         public int OOB_Y(Vector3 worldPos)
         {
-            Vector3 locPos = TryGetInstance().transform.InverseTransformPoint(worldPos);
+            Vector3 locPos = transform.InverseTransformPoint(worldPos);
             return OOB_(locPos.y);
         }
 
@@ -134,7 +128,7 @@ namespace Course.Core
         /// <returns>1 if out of bounds positively, -1 if negatively, 0 if within bounds.</returns>
         public int OOB_Z(Vector3 worldPos)
         {
-            Vector3 locPos = TryGetInstance().transform.InverseTransformPoint(worldPos);
+            Vector3 locPos = transform.InverseTransformPoint(worldPos);
             return OOB_(locPos.z);
         }
 
@@ -158,9 +152,8 @@ namespace Course.Core
         /// Unity's Awake method.
         /// Initializes the camera and BoxCollider references and resizes the collider.
         /// </summary>
-        protected override void Awake()
+        private void Awake()
         {
-            base.Awake();
             _cam ??= Camera.main;
             if (!_cam.orthographic)
                 _cam.orthographic = true;

@@ -50,7 +50,7 @@ namespace Course.Installation
         [Inject] private IGameStateReader _gameState;
 
         [Inject]
-        private IAsteraX _manager;
+        private ISafeSpawnPositionProvider _safeSpawnPositionProvider;
         [Inject]
         private ICustomization _customizationManager;
 
@@ -63,7 +63,7 @@ namespace Course.Installation
 
             statsProvider?.RegisterStat(Stats.Speed, _config.MoveSpeed);
             _actions = new PlayerActionState(_health, _gameState);
-            jumpBehaviour?.Initialize(_health, _manager, _actions);
+            jumpBehaviour?.Initialize(_health, _safeSpawnPositionProvider, _actions);
             
             turretInstaller?.Initialize(_actions);
             _customizationManager.OnApplyShipPart += HandleCustomizationChanged;

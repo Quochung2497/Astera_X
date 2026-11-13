@@ -1,6 +1,7 @@
 ﻿using System;
 using Course.Control.Asteroid;
 using Course.Core;
+using Course.ScriptableObject;
 using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
@@ -71,7 +72,7 @@ namespace Course.Attribute
 
         #region Initialization
 
-        public void Initialize(OffScreenWrapper wrapper, IAsteroidHealth health)
+        public void Initialize(OffScreenWrapper wrapper, IAsteroidHealth health, IScreenBounds screenBounds, AsteroidsConfig config)
         {
             _rb = GetComponent<Rigidbody>();
             _wrapper = wrapper;
@@ -81,7 +82,8 @@ namespace Course.Attribute
             _asteroidBehaviour = new AsteroidBehaviour(
                 _asteraXManager, 
                 (frag, injectedHp) => frag.Setup(injectedHp),
-                pos => ScreenBounds.TryGetInstance().OOB(pos),
+                screenBounds,
+                config,
                 (self, coll) => OnHitInternal(coll)
             );
             Reset();
