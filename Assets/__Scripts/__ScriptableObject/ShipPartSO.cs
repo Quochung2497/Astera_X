@@ -38,7 +38,18 @@ namespace Course.ScriptableObject
         public struct StatModifier
         {
             public Stats stats;          // e.g. Stats.Speed
-            [Range(0,1)] public float percentBonus;  
+            [Range(0,1)] public float percentBonus;
+
+            public static float GetBonusFor(ReadOnlySpan<StatModifier> modifiers, Stats stat)
+            {
+                for (int i = modifiers.Length - 1; i >= 0; i--)
+                {
+                    if (modifiers[i].stats == stat)
+                        return modifiers[i].percentBonus;
+                }
+
+                return 0f;
+            }
         }
     }
 }

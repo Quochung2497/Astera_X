@@ -2245,11 +2245,6 @@ PrefabInstance:
       objectReference: {fileID: 1957896220}
     - target: {fileID: 9026391602704415601, guid: 8c64eec13ebf02248980251137e887cb,
         type: 3}
-      propertyPath: statsProvider
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 9026391602704415601, guid: 8c64eec13ebf02248980251137e887cb,
-        type: 3}
       propertyPath: levelBehaviour
       value: 
       objectReference: {fileID: 1299226215}

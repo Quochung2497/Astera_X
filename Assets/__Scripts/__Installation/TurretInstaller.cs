@@ -19,8 +19,7 @@ namespace Course.Installation
         [Header("Turret & Shooting")]
         [SerializeField] Bullet bulletPrefab;
         [SerializeField] private BulletConfig  defaultBulletConfig;
-        [SerializeField]
-        private StatsProvider statsProvider = null;
+
 
         [Header("Trail VFX")]
         [Tooltip("Assign the ExhaustTrailWrapBehaviour prefab here.")]
@@ -31,6 +30,8 @@ namespace Course.Installation
         [SerializeField]
         TurretBehaviour turretBehaviour;
         
+        private readonly IStatsProvider _stats = new StatsProvider();
+
         private Rotator _rotator;
         private Shooter _shooter;
         
@@ -54,10 +55,10 @@ namespace Course.Installation
             _rotator = new Rotator();
             _bulletPool = new BulletPool(bulletPrefab, new GameObject("BulletAnchor").transform);
             _bulletFactory = new BulletFactory(_bulletPool);
-            statsProvider.RegisterStat(Stats.Speed,  defaultBulletConfig.speed);
-            statsProvider.RegisterStat(Stats.Health, defaultBulletConfig.lifetime);
-            statsProvider.RegisterStat(Stats.Damage, defaultBulletConfig.damage);
-            _shooter = new Shooter(_bulletFactory, statsProvider.Get(Stats.Speed).MaxValue, statsProvider.Get(Stats.Health).MaxValue, statsProvider.Get(Stats.Damage).MaxValue);
+            _stats.RegisterStat(Stats.Speed,  defaultBulletConfig.speed);
+            _stats.RegisterStat(Stats.Health, defaultBulletConfig.lifetime);
+            _stats.RegisterStat(Stats.Damage, defaultBulletConfig.damage);
+            _shooter = new Shooter(_bulletFactory, _stats.Get(Stats.Speed).MaxValue, _stats.Get(Stats.Health).MaxValue, _stats.Get(Stats.Damage).MaxValue);
             _builder = new TurretBehaviour.TurretBuilder(turretBehaviour)
                 .WithInputReader(_inputReader)
                 .WithRotator(_rotator)
@@ -83,8 +84,9 @@ namespace Course.Installation
         {
             if (part != PartType.Turret) return;
 
-            foreach (var mod in mods)
-                statsProvider.SetMaxValue(mod.stats, mod.percentBonus);
+            _stats.ApplyBonus(Stats.Speed, ShipPartSO.StatModifier.GetBonusFor(mods, Stats.Speed));
+            _stats.ApplyBonus(Stats.Health, ShipPartSO.StatModifier.GetBonusFor(mods, Stats.Health));
+            _stats.ApplyBonus(Stats.Damage, ShipPartSO.StatModifier.GetBonusFor(mods, Stats.Damage));
             
             RebuildShooter();
             
@@ -94,9 +96,9 @@ namespace Course.Installation
         
         private void RebuildShooter()
         {
-            float speed    = statsProvider.Get(Stats.Speed).MaxValue;
-            float lifetime = statsProvider.Get(Stats.Health).MaxValue;
-            float damage   = statsProvider.Get(Stats.Damage).MaxValue;
+            float speed    = _stats.Get(Stats.Speed).MaxValue;
+            float lifetime = _stats.Get(Stats.Health).MaxValue;
+            float damage   = _stats.Get(Stats.Damage).MaxValue;
             _shooter.Reconfigure(speed, lifetime, damage);
         }
 

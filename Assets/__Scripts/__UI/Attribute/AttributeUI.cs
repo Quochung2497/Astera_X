@@ -66,9 +66,9 @@ namespace Course.UI
         public void Initialize(IAttributeBehaviour attribute, ICustomization manager)
         {
             _attribute = attribute;
-            _attribute.OnValueChanged += UpdateUI;
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
-            _manager.OnCustomizationChanged += UpdateUI;
+            if (isActiveAndEnabled)
+                Subscribe();
             UpdateUI();
             _isInitialized = true;
         }
@@ -95,15 +95,19 @@ namespace Course.UI
                 text.text = _attribute.Fraction.ToString("N0", CultureInfo.InvariantCulture);
         }
 
-        /// <summary>
-        /// Unity's OnEnable method.
-        /// Resubscribes to the OnValueChanged event if the UI is initialized.
-        /// </summary>
         private void OnEnable()
         {
             if (!_isInitialized)
                 return;
+
+            Subscribe();
+            UpdateUI();
+        }
+
+        private void Subscribe()
+        {
             _attribute.OnValueChanged += UpdateUI;
+            _manager.OnCustomizationChanged += UpdateUI;
         }
 
         /// <summary>

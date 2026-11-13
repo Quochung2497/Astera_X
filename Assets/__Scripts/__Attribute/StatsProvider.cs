@@ -1,52 +1,47 @@
 using System.Collections.Generic;
-using Course.Attribute;
-using UnityEngine;
 
-[DisallowMultipleComponent]
-public class StatsProvider : MonoBehaviour, IStatsProvider
+namespace Course.Attribute
 {
-    readonly Dictionary<Stats, IAttribute> _attrs = new();
-
-    /// <summary>
-    /// Call once from each Installer, passing in your config SO data.
-    /// </summary>
-    public void RegisterStat(Stats stats, float baseValue)
+    internal sealed class StatsProvider : IStatsProvider
     {
-        if (_attrs.ContainsKey(stats))
+        private readonly Dictionary<Stats, IAttribute> _attrs = new();
+
+        public void RegisterStat(Stats stat, float baseValue)
         {
-            Debug.LogWarning($"StatsProvider: stat {stats} already registered; skipping registration.");
-            return;
+            if (_attrs.ContainsKey(stat)) return;
+
+            _attrs.Add(stat, new Attribute(baseValue));
         }
-        _attrs[stats] = new Attribute(baseValue);
-    }
-    
-    public void RegisterStatInstance(Stats stat, IAttribute instance)
-    {
-        _attrs[stat] = instance; 
-    }
 
-    /// <summary>
-    /// Everyone else asks for the same instance.
-    /// </summary>
-    public IAttribute Get(Stats stats)
-    {
-        if (!_attrs.TryGetValue(stats, out var a))
-            throw new KeyNotFoundException($"Stat {stats} not registered");
-        return a;
-    }
-    
-    public void SetMaxValue(Stats stats, float percentBonus)
-    {
-        var attr = Get(stats);
-        attr.SetMaxValue(attr.BaseValue * (1f + percentBonus));
-    }
-    
-    public void ResetAllToBase()
-    {
-        foreach (var kv in _attrs)
+        public void RegisterStatInstance(Stats stat, IAttribute instance)
         {
-            var attr = kv.Value;
-            attr.SetMaxValue(attr.BaseValue);
+            _attrs[stat] = instance;
+        }
+
+        public IAttribute Get(Stats stat)
+        {
+            if (!_attrs.TryGetValue(stat, out var attribute))
+                throw new KeyNotFoundException($"Stat {stat} not registered");
+
+            return attribute;
+        }
+
+        public void ApplyBonus(Stats stat, float percentBonus)
+        {
+            if (percentBonus == 0f)
+            {
+                ResetToBase(stat);
+                return;
+            }
+
+            var attribute = Get(stat);
+            attribute.SetMaxValue(attribute.BaseValue * (1f + percentBonus));
+        }
+
+        public void ResetToBase(Stats stat)
+        {
+            var attribute = Get(stat);
+            attribute.SetMaxValue(attribute.BaseValue);
         }
     }
 }

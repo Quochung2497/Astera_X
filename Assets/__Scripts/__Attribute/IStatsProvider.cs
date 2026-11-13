@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace Course.Attribute
 {
     public interface IStatsProvider
@@ -8,9 +6,9 @@ namespace Course.Attribute
         void RegisterStatInstance(Stats stat, IAttribute instance);
         IAttribute Get(Stats stats);
         /// <summary> Sets MaxValue = BaseValue * (1 + percentBonus) </summary>
-        void SetMaxValue(Stats stats, float percentBonus);
-
-        void ResetAllToBase();
+        void ApplyBonus(Stats stat, float percentBonus);
+        /// <summary> Restores the selected stat's current and maximum values to its base value. </summary>
+        void ResetToBase(Stats stat);
     }
 }
 

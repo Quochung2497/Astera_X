@@ -12,12 +12,7 @@ namespace Course.Installation
 {
     public class PlayerInstaller : MonoBehaviour,IInstaller
     {
-        [Header("Player Stats")]
-        [SerializeField]
-        private StatsProvider statsProvider = null;
 
-        
-        
         [Header("Player Components")]
         [SerializeField] 
         PlayerShipBehaviour playerController;
@@ -36,6 +31,8 @@ namespace Course.Installation
         [SerializeField]
         OnReAppearEffect reAppearEffect;
         
+        private readonly IStatsProvider _stats = new StatsProvider();
+
         // Cache
         private IMover _mover;
         private ITiltWithVelocity _tiltWithVelocity;
@@ -56,12 +53,12 @@ namespace Course.Installation
 
         public void AwakeInitialize()
         {
-            statsProvider.RegisterStatInstance(Stats.Health, _damageable);
+            _stats.RegisterStatInstance(Stats.Health, _damageable);
             
-            statsProvider?.RegisterStat(Stats.Score, _config.Score);
-            scoreBehaviour?.Initialize(statsProvider.Get(Stats.Score));
+            _stats.RegisterStat(Stats.Score, _config.Score);
+            scoreBehaviour?.Initialize(_stats.Get(Stats.Score));
 
-            statsProvider?.RegisterStat(Stats.Speed, _config.MoveSpeed);
+            _stats.RegisterStat(Stats.Speed, _config.MoveSpeed);
             _actions = new PlayerActionState(_health, _gameState);
             jumpBehaviour?.Initialize(_health, _safeSpawnPositionProvider, _actions);
             
@@ -84,7 +81,7 @@ namespace Course.Installation
             _builder = new PlayerShipBehaviour.PlayerBuilder(playerController)
                 .WithMover(_mover)
                 .WithInputReader(_inputReader)
-                .WithMoveSpeed(statsProvider.Get(Stats.Speed).Value)
+                .WithMoveSpeed(_stats.Get(Stats.Speed).Value)
                 .WithRigidbody(_rb)
                 .WithTiltLogic(_tiltWithVelocity)
                 .WithJumpBehaviour(jumpBehaviour)
@@ -110,19 +107,10 @@ namespace Course.Installation
         private void HandleCustomizationChanged(PartType part, Transform mount, ShipPartSO.StatModifier[] mods)
         {
             if (part != PartType.Body) return;
-            foreach (var mod in mods)
-                statsProvider.SetMaxValue(mod.stats, mod.percentBonus);
-            RebuildPlayer();
-        }
+            _stats.ApplyBonus(Stats.Speed, ShipPartSO.StatModifier.GetBonusFor(mods, Stats.Speed));
+            _builder.WithMoveSpeed(_stats.Get(Stats.Speed).MaxValue).Build();
 
-        private void RebuildPlayer()
-        {
-            float moveSpeed = statsProvider.Get(Stats.Speed).MaxValue;
-            float maxHealth = statsProvider.Get(Stats.Health).MaxValue;
-
-            _builder.WithMoveSpeed(moveSpeed).Build();
-            
-            _damageable.SetMaxValue(maxHealth);
+            _stats.ApplyBonus(Stats.Health, ShipPartSO.StatModifier.GetBonusFor(mods, Stats.Health));
         }
     }
 }
