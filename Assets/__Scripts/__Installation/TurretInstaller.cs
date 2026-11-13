@@ -37,8 +37,7 @@ namespace Course.Installation
         private IFactory<Bullet> _bulletFactory;
         private BulletPool _bulletPool;
         
-        private IHealthBehaviour _healthBehaviour;
-        private IJumpBehaviour _jumpBehaviour;
+        private IPlayerActionState _actions;
         private TurretBehaviour.TurretBuilder _builder;
         
         [Inject] private IInputReader _inputReader;
@@ -46,11 +45,7 @@ namespace Course.Installation
         [Inject]
         private ICustomization _customizationManager;
 
-        public void Initialize(IHealthBehaviour healthBehaviour, IJumpBehaviour jumpBehaviour)
-        {
-            _healthBehaviour = healthBehaviour;
-            _jumpBehaviour = jumpBehaviour;
-        }
+        public void Initialize(IPlayerActionState actions) => _actions = actions;
 
         public void AwakeInitialize(){}
 
@@ -66,8 +61,7 @@ namespace Course.Installation
             _builder = new TurretBehaviour.TurretBuilder(turretBehaviour)
                 .WithInputReader(_inputReader)
                 .WithRotator(_rotator)
-                .WithHealthBehaviour(_healthBehaviour)
-                .WithJumpBehaviour(_jumpBehaviour);
+                .WithActionState(_actions);
             _customizationManager.OnApplyShipPart += HandleShipPartApplied;
         }
 

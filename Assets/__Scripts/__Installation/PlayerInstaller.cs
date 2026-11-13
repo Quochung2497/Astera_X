@@ -41,11 +41,13 @@ namespace Course.Installation
         private ITiltWithVelocity _tiltWithVelocity;
         private Rigidbody _rb;
         private PlayerShipBehaviour.PlayerBuilder _builder;
+        private PlayerActionState _actions;
         
         [Inject] private PlayerShipConfig _config;
         [Inject] private IDamageable _damageable;
         [Inject] private IHealthBehaviour _health;
         [Inject] private IInputReader _inputReader;
+        [Inject] private IGameStateReader _gameState;
 
         [Inject]
         private IAsteraX _manager;
@@ -60,9 +62,10 @@ namespace Course.Installation
             scoreBehaviour?.Initialize(statsProvider.Get(Stats.Score));
 
             statsProvider?.RegisterStat(Stats.Speed, _config.MoveSpeed);
-            jumpBehaviour?.Initialize(_health, _manager);
+            _actions = new PlayerActionState(_health, _gameState);
+            jumpBehaviour?.Initialize(_health, _manager, _actions);
             
-            turretInstaller?.Initialize(_health, jumpBehaviour);
+            turretInstaller?.Initialize(_actions);
             _customizationManager.OnApplyShipPart += HandleCustomizationChanged;
         }
 
@@ -84,7 +87,8 @@ namespace Course.Installation
                 .WithMoveSpeed(statsProvider.Get(Stats.Speed).Value)
                 .WithRigidbody(_rb)
                 .WithTiltLogic(_tiltWithVelocity)
-                .WithJumpBehaviour(jumpBehaviour);
+                .WithJumpBehaviour(jumpBehaviour)
+                .WithActionState(_actions);
             _builder.Build();
         }
         

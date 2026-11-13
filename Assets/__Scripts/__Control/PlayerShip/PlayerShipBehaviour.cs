@@ -44,10 +44,6 @@ namespace Course.Control.Player
       /// </summary>
       private float _moveSpeed;
       
-      /// <summary>
-      ///
-      /// </summary>
-      private bool _isJumping = false;
       
       /// <summary>
       /// Indicates whether the player ship has been initialized.
@@ -58,6 +54,7 @@ namespace Course.Control.Player
       /// Reference to the jump behaviour component for managing player jump.
       /// </summary>
       private IJumpBehaviour _jumpBehaviour;
+      private IPlayerActionState _actions;
       
       #endregion
 
@@ -71,7 +68,7 @@ namespace Course.Control.Player
       /// <param name="moveSpeed">The movement speed of the player ship.</param>
       /// <param name="rb">The rigidbody component of the player ship.</param>
       /// <param name="tiltWithVelocity">The tilt logic component for tilting the ship.</param>
-      private void Initialize(IMover mover, IInputReader inputReader, float moveSpeed, Rigidbody rb, ITiltWithVelocity tiltWithVelocity, IJumpBehaviour jumpBehaviour)
+      private void Initialize(IMover mover, IInputReader inputReader, float moveSpeed, Rigidbody rb, ITiltWithVelocity tiltWithVelocity, IJumpBehaviour jumpBehaviour, IPlayerActionState actions)
       {
           if (!_isInitialized)
           {
@@ -80,11 +77,11 @@ namespace Course.Control.Player
               _rb              = rb;
               _tiltWithVelocity= tiltWithVelocity;
               _jumpBehaviour   = jumpBehaviour;
+              _actions         = actions;
 
               _inputReader.OnMoveEvent   += OnMove;
               OnMove(_inputReader.MoveDirection);
               _jumpBehaviour.OnDisappear += OnDisappear;
-              _jumpBehaviour.OnReappear  += OnReappear;
 
               _isInitialized = true;
           }
@@ -113,26 +110,9 @@ namespace Course.Control.Player
           _moveInput = delta;
       }
       
-      /// <summary>
-      /// Handles the jump action when triggered by the jump behavior.
-      /// </summary>
       private void OnDisappear()
       {
-          if (!_isInitialized ||_isJumping)
-              return;
-          _isJumping = true;
           _mover.Stop();
-      }
-      
-      
-      /// <summary>
-      /// Handles the logic when the player ship dies.
-      /// Stops movement, hides the ship, and raises the "Game Over" event.
-      /// </summary>
-      private void OnReappear()
-      {
-          if (!_isInitialized) return;
-          _isJumping = false;
       }
       #endregion
 
@@ -148,7 +128,6 @@ namespace Course.Control.Player
               return;
           _inputReader.OnMoveEvent += OnMove;
           OnMove(_inputReader.MoveDirection);
-          _jumpBehaviour.OnReappear += OnReappear;
           _jumpBehaviour.OnDisappear += OnDisappear;
       }
 
@@ -161,7 +140,6 @@ namespace Course.Control.Player
           if (!_isInitialized)
               return;
           _inputReader.OnMoveEvent -= OnMove;
-          _jumpBehaviour.OnReappear -= OnReappear;
           _jumpBehaviour.OnDisappear -= OnDisappear;
       }
 
@@ -171,7 +149,7 @@ namespace Course.Control.Player
       /// </summary>
       private void FixedUpdate()
       {
-          if (!_isInitialized || _isJumping)
+          if (!_isInitialized || !_actions.CanMove)
               return;
           HandleMovement();
       }
@@ -191,6 +169,7 @@ namespace Course.Control.Player
           private float _moveSpeed;
           private ITiltWithVelocity _tilt;
           private IJumpBehaviour _jumpBehaviour;
+          private IPlayerActionState _actions;
           private Rigidbody _rb;
 
           /// <summary>
@@ -268,6 +247,12 @@ namespace Course.Control.Player
               return this;
           }
           
+          public PlayerBuilder WithActionState(IPlayerActionState actions)
+          {
+              _actions = actions;
+              return this;
+          }
+
           /// <summary>
           /// Builds and initializes the PlayerShipBehaviour instance.
           /// Throws an exception if any required component is not set.
@@ -285,7 +270,8 @@ namespace Course.Control.Player
                   _moveSpeed,
                   _rb,
                   _tilt,
-                  _jumpBehaviour
+                  _jumpBehaviour,
+                  _actions
               );
           }
       }

@@ -1,7 +1,5 @@
 using System;
-using Course.Attribute;
 using Course.Control.Player;
-using Course.Core;
 using Course.Utility;
 using Course.Utility.Events;
 using UnityEngine;
@@ -36,14 +34,7 @@ namespace Course.Control.Turret
         /// </summary>
         private IShooter _shooter;
 
-        /// <summary>
-        /// Reference to the jump behavior component for handling jump-related actions.
-        /// </summary>
-        private IHealthBehaviour _healthBehaviour;
-
-        private IJumpBehaviour _jumpBehaviour;
-        
-        private GameManager _gameManager;
+        private IPlayerActionState _actions;
 
         /// <summary>
         /// Transform representing the turret object.
@@ -65,8 +56,6 @@ namespace Course.Control.Turret
         /// </summary>
         private Vector2 _screenPos;
 
-        private bool _isJumping = false;
-
         /// <summary>
         /// Indicates whether the turret behavior has been initialized.
         /// </summary>
@@ -83,29 +72,24 @@ namespace Course.Control.Turret
         /// <param name="shooter">The shooter component for firing projectiles.</param>
         /// <param name="turret">The transform of the turret object.</param>
         /// <param name="spawn">The transform of the spawn point for projectiles.</param>
-        /// <param name="healthBehaviour">The jump behavior component.</param>
+        /// <param name="actions">The shared player action permissions.</param>
         private void Initialize(IInputReader inputReader,
             IRotator rotator,
             IShooter shooter,
             Transform turret,
             Transform spawn,
-            IHealthBehaviour healthBehaviour,
-            IJumpBehaviour jumpBehaviour
+            IPlayerActionState actions
             )
         {
             if (!_isInitialized)
             {
                 _inputReader      = inputReader;
                 _rotator          = rotator;
-                _healthBehaviour  = healthBehaviour;
-                _jumpBehaviour    = jumpBehaviour;
+                _actions          = actions;
                 _cam              = Camera.main;
-                _gameManager = GameManager.TryGetInstance();
 
                 _inputReader.OnAimEvent  += OnAim;
                 _inputReader.OnFireEvent += OnFire;
-                _jumpBehaviour.OnDisappear += OnJumpDisappear;
-                _jumpBehaviour.OnReappear  += OnJumpReappear;
 
                 _isInitialized = true;
             }
@@ -119,7 +103,7 @@ namespace Course.Control.Turret
         /// <param name="screenPos">The screen position for aiming.</param>
         private void OnAim(Vector2 screenPos)
         {
-            if (_healthBehaviour.IsDead)
+            if (!_actions.CanAim)
                 return;
             _rotator.Aim(_turret, screenPos, _cam);
             if (debugDrawLine)
@@ -135,7 +119,7 @@ namespace Course.Control.Turret
         /// </summary>
         private void OnFire(Vector2 screenPos)
         {
-            if (_healthBehaviour.IsDead || _gameManager.currentStates != GameState.level || _isJumping)
+            if (!_actions.CanFire)
                 return;
             _rotator.Aim(_turret, screenPos, _cam);
             if (debugDrawLine)
@@ -150,17 +134,6 @@ namespace Course.Control.Turret
         }
         
         
-        private void OnJumpReappear()
-        {
-            _isJumping = false;
-        }
-
-        private void OnJumpDisappear()
-        {
-            _isJumping = true;
-        }
-
-
         #endregion
 
         #region Unity API
@@ -243,13 +216,8 @@ namespace Course.Control.Turret
             /// </summary>
             Transform _spawnTransform;
         
-            /// <summary>
-            /// Reference to the jump behavior component for handling jump-related actions.
-            /// </summary>
-            IHealthBehaviour _healthBehaviour;
+            private IPlayerActionState _actions;
 
-            private IJumpBehaviour _jumpBehaviour;
-        
             /// <summary>
             /// Initializes a new instance of the TurretBuilder class with the specified TurretBehaviour instance.
             /// </summary>
@@ -314,23 +282,11 @@ namespace Course.Control.Turret
                 return this;
             }
         
-            /// <summary>
-            /// Sets the jump behavior component for the turret behavior.
-            /// </summary>
-            /// <param name="healthBehaviour">The jump behavior component.</param>
-            /// <returns>The current TurretBuilder instance.</returns>
-            public TurretBuilder WithHealthBehaviour(IHealthBehaviour healthBehaviour)
+            public TurretBuilder WithActionState(IPlayerActionState actions)
             {
-                _healthBehaviour = healthBehaviour;
+                _actions = actions;
                 return this;
             }
-
-            public TurretBuilder WithJumpBehaviour(IJumpBehaviour jumpBehaviour)
-            {
-                _jumpBehaviour = jumpBehaviour;
-                return this;
-            }
-        
             /// <summary>
             /// Builds and initializes the TurretBehaviour instance.
             /// Throws an exception if any required component is not set.
@@ -342,8 +298,7 @@ namespace Course.Control.Turret
                 if (_shooter == null) throw new InvalidOperationException("Shooter not set");
                 if (_turretTransform == null) throw new InvalidOperationException("Turret Transform not set");
                 if (_spawnTransform == null) throw new InvalidOperationException("Spawn Transform not set");
-                if (_healthBehaviour == null) throw new InvalidOperationException("HealthBehaviour not set");
-                if (_jumpBehaviour == null) throw new InvalidOperationException("JumpBehaviour not set");
+                if (_actions == null) throw new InvalidOperationException("Player action state not set");
         
                 _behaviour.Initialize(
                     _inputReader,
@@ -351,8 +306,7 @@ namespace Course.Control.Turret
                     _shooter,
                     _turretTransform,
                     _spawnTransform,
-                    _healthBehaviour,
-                    _jumpBehaviour
+                    _actions
                 );
             }
         }

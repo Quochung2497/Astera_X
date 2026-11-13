@@ -39,7 +39,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
     private Renderer[]      _renderers;
     private Collider        _collider;
     private List<Renderer> _renderersCache;
-    private bool            _isJumping = false;
+    private PlayerActionState _actions;
     private bool            _isInitialized = false;
     private bool            _healthEventsBound;
     /// <summary>
@@ -55,12 +55,13 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 
     #region Public Methods
 
-    public void Initialize(IHealthBehaviour healthBehaviour,IAsteraX asteraX)
+    internal void Initialize(IHealthBehaviour healthBehaviour, IAsteraX asteraX, PlayerActionState actions)
     {
         _healthBehaviour = healthBehaviour 
                            ?? throw new ArgumentNullException(nameof(healthBehaviour));
 
         _asteraX = asteraX;
+        _actions = actions;
         _collider  = GetComponent<Collider>();
         _gameStateGameOverevent = new GameStateChangedEvent(GameState.gameOver);
 
@@ -110,7 +111,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 
     private void HandleOnHealthChanged()
     {
-        if (_isJumping || GameManager.TryGetInstance().currentStates != GameState.level)
+        if (!_actions.TryBeginJump())
             return;
 
         StartCoroutine(JumpSequence());
@@ -118,14 +119,6 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 
     private IEnumerator JumpSequence()
     {
-        _isJumping = true;
-        
-        if (_healthBehaviour.IsDead)
-        {
-            _isJumping = false;
-            yield break;
-        }
-        
         OnDisappear?.Invoke();
         
         SetVisible(false);
@@ -141,10 +134,12 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
 
         SetVisible(true);
 
+        _actions.Reappear();
+
         OnReappear?.Invoke();
 
         yield return new WaitForSeconds(immuneTime);
-        _isJumping = false;
+        _actions.EndImmunity();
     }
 
     private void HandleOnDeath()
@@ -181,7 +176,7 @@ public class JumpBehaviour : MonoBehaviour,IJumpBehaviour
             if (!ast.TryDestroyFromPlayerCollision()) return;
 
             // Finish the asteroid before Game Over can deactivate the asteroid group.
-            if (!_isJumping && !_healthBehaviour.IsDead)
+            if (_actions.CanTakeDamage)
                 _healthBehaviour.ChangeValue(-_damage);
         }
     }
