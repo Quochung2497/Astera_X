@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Course.Core;
 using Course.Utility;
@@ -15,13 +14,11 @@ namespace Course.Attribute.Bullet
         private Rigidbody        _rb;
         private IObjectPool<Bullet> _pool;
         private Collider _collider;
-        private bool _launched;
+        private readonly BulletLifecycle _lifecycle = new BulletLifecycle();
         private float _speed;
         private float _lifetime;
-        private Guid _spawnGuid;
         private Coroutine _lifetimeCoroutine;
         private IOffScreenWrapper _wrapper;
-        private bool _alreadyReleased = false;
 
         #region Public API
 
@@ -40,8 +37,7 @@ namespace Course.Attribute.Bullet
         /// <param name="launchDirection">The direction to fire.</param>
         public void Launch(Vector3 launchDirection)
         {
-            _spawnGuid = Guid.NewGuid();
-            _launched = true;
+            _lifecycle.Launch();
             _rb.linearVelocity = launchDirection * _speed;
             _collider.enabled = true;
             _lifetimeCoroutine = StartCoroutine(SelfDestruct());
@@ -65,7 +61,7 @@ namespace Course.Attribute.Bullet
         /// </summary>
         public void Reset()
         {
-            _launched = false;
+            _lifecycle.ResetLaunch();
             _collider.enabled = false;
             _rb.linearVelocity = Vector3.zero;
             _rb.angularVelocity = Vector3.zero;
@@ -77,12 +73,11 @@ namespace Course.Attribute.Bullet
         }
 
         /// <summary>
-        /// Releases the bullet back to the pool or destroys it if no pool is available.
+        /// Returns the bullet to the pool once per reservation.
         /// </summary>
         public void Release()
         { 
-            if (_alreadyReleased) return;
-            _alreadyReleased = true;
+            if (!_lifecycle.TryRelease()) return;
             _pool.Release(this);
         }
 
@@ -122,7 +117,7 @@ namespace Course.Attribute.Bullet
         /// </summary>
         private void OnEnable()
         {
-            _alreadyReleased = false;
+            _lifecycle.Reserve();
             _wrapper.OnWrap += HandleWrap;
         }
 
@@ -137,8 +132,8 @@ namespace Course.Attribute.Bullet
         
         private void HandleWrap(GameObject go)
         {
-            if (go != gameObject || !_launched) return;
-            EventBus<BulletWrapped>.Raise(new BulletWrapped(_spawnGuid));
+            if (go != gameObject || !_lifecycle.IsLaunched) return;
+            EventBus<BulletWrapped>.Raise(new BulletWrapped(_lifecycle.ShotId));
         }
 
         /// <summary>
@@ -146,7 +141,7 @@ namespace Course.Attribute.Bullet
         /// </summary>
         private void OnCollisionEnter(Collision other)
         {
-            if (!_launched || other.gameObject.layer != LayerNameProvider.GetLayer(LayerName.Asteroid))
+            if (!_lifecycle.IsLaunched || other.gameObject.layer != LayerNameProvider.GetLayer(LayerName.Asteroid))
                 return;
 
             var asteroid = other.gameObject.GetComponent<IAsteroid>();
@@ -157,7 +152,7 @@ namespace Course.Attribute.Bullet
                 if (asteroid.TryHitByBullet(Damage))
                 {
                     EventBus<AsteroidShot>.Raise(new AsteroidShot());
-                    EventBus<AsteroidHitByBullet>.Raise(new AsteroidHitByBullet(_spawnGuid));
+                    EventBus<AsteroidHitByBullet>.Raise(new AsteroidHitByBullet(_lifecycle.ShotId));
                 }
             }
             finally
