@@ -95,8 +95,7 @@ namespace Course.Core
         public bool OOB(Vector3 worldPos)
         {
             Vector3 locPos = transform.InverseTransformPoint(worldPos);
-            float maxDist = Mathf.Max(Mathf.Abs(locPos.x), Mathf.Abs(locPos.y), Mathf.Abs(locPos.z));
-            return (maxDist > 0.5f);
+            return ScreenBoundsRules.IsOutside(locPos);
         }
 
         /// <summary>
@@ -137,12 +136,7 @@ namespace Course.Core
         /// </summary>
         /// <param name="num">The axis value to check.</param>
         /// <returns>1 if out of bounds positively, -1 if negatively, 0 if within bounds.</returns>
-        public int OOB_(float num)
-        {
-            if (num > 0.5f) return 1;
-            if (num < -0.5f) return -1;
-            return 0;
-        }
+        public int OOB_(float num) => ScreenBoundsRules.GetAxisSide(num);
 
         #endregion
 
