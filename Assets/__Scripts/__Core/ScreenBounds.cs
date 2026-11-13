@@ -31,16 +31,6 @@ namespace Course.Core
         private BoxCollider _box;
 
         /// <summary>
-        /// Minimum screen bounds in world space.
-        /// </summary>
-        private Vector2 _screenMin;
-
-        /// <summary>
-        /// Maximum screen bounds in world space.
-        /// </summary>
-        private Vector2 _screenMax;
-
-        /// <summary>
         /// Stores the last screen width to detect changes.
         /// </summary>
         private int _lastW;
@@ -72,22 +62,6 @@ namespace Course.Core
         }
 
         /// <summary>
-        /// Gets the bounds of the screen in world space.
-        /// </summary>
-        public Bounds BOUNDS
-        {
-            get
-            {
-                if (_box == null)
-                {
-                    Debug.LogError("ScreenBounds.BOUNDS - BoxCollider is not initialized.");
-                    return new Bounds();
-                }
-                return _box.bounds;
-            }
-        }
-
-        /// <summary>
         /// Checks if a given world position is out of bounds.
         /// </summary>
         /// <param name="worldPos">The world position to check.</param>
@@ -97,46 +71,6 @@ namespace Course.Core
             Vector3 locPos = transform.InverseTransformPoint(worldPos);
             return ScreenBoundsRules.IsOutside(locPos);
         }
-
-        /// <summary>
-        /// Checks if a given world position is out of bounds along the X-axis.
-        /// </summary>
-        /// <param name="worldPos">The world position to check.</param>
-        /// <returns>1 if out of bounds positively, -1 if negatively, 0 if within bounds.</returns>
-        public int OOB_X(Vector3 worldPos)
-        {
-            Vector3 locPos = transform.InverseTransformPoint(worldPos);
-            return OOB_(locPos.x);
-        }
-
-        /// <summary>
-        /// Checks if a given world position is out of bounds along the Y-axis.
-        /// </summary>
-        /// <param name="worldPos">The world position to check.</param>
-        /// <returns>1 if out of bounds positively, -1 if negatively, 0 if within bounds.</returns>
-        public int OOB_Y(Vector3 worldPos)
-        {
-            Vector3 locPos = transform.InverseTransformPoint(worldPos);
-            return OOB_(locPos.y);
-        }
-
-        /// <summary>
-        /// Checks if a given world position is out of bounds along the Z-axis.
-        /// </summary>
-        /// <param name="worldPos">The world position to check.</param>
-        /// <returns>1 if out of bounds positively, -1 if negatively, 0 if within bounds.</returns>
-        public int OOB_Z(Vector3 worldPos)
-        {
-            Vector3 locPos = transform.InverseTransformPoint(worldPos);
-            return OOB_(locPos.z);
-        }
-
-        /// <summary>
-        /// Helper method to determine out-of-bounds status for a single axis.
-        /// </summary>
-        /// <param name="num">The axis value to check.</param>
-        /// <returns>1 if out of bounds positively, -1 if negatively, 0 if within bounds.</returns>
-        public int OOB_(float num) => ScreenBoundsRules.GetAxisSide(num);
 
         #endregion
 

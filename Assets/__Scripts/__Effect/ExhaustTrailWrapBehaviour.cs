@@ -1,7 +1,6 @@
 using System;
 using Course.Core;
 using UnityEngine;
-using UnityEngine.Pool;
 
 namespace Course.Effect
 {
@@ -13,15 +12,12 @@ namespace Course.Effect
         private float framesToSkip = 1f;
         
         private Transform        _targetTransform;
+        private Rigidbody        _targetBody;
         private ParticleSystem   _ps;
         private ParticleSystem.EmissionModule _emitter;
-        private IObjectPool<ExhaustTrailWrapBehaviour> _pool;
         private IOffScreenWrapper _offScreenWrapper;
-        private float _frameCounter = 0f;
+        private readonly ExhaustTrailEmission _emission = new ExhaustTrailEmission();
         private bool _isInitialize = false;
-
-        // If (velocity.sqrMagnitude > this), we emit; otherwise we don’t.
-        private const float SPEED_THRESHOLD_SQR = 0.0001f;
 
         /// <summary>
         /// Call this once, immediately after the parent ship/bullet is built or pulled from pool.
@@ -38,7 +34,8 @@ namespace Course.Effect
             _offScreenWrapper = offScreenWrapper ?? throw new ArgumentNullException(nameof(offScreenWrapper));
             _ps.Play();
 
-            _targetTransform = targetTransform  ?? throw new System.ArgumentNullException(nameof(targetTransform));
+            _targetTransform = targetTransform ?? throw new ArgumentNullException(nameof(targetTransform));
+            _targetBody = _targetTransform.GetComponent<Rigidbody>();
 
             _offScreenWrapper.OnWrap += HandleWrap;
             _isInitialize = true;
@@ -49,15 +46,13 @@ namespace Course.Effect
             if (!_isInitialize || _targetTransform == null)
                 return;
             
-            if (_frameCounter > 0)
+            if (_emission.ConsumeSuppressedFrame())
             {
-                _frameCounter--;
                 _emitter.enabled = false;
                 return;
             }
             
-            float speedSqr = _targetTransform.GetComponent<Rigidbody>().linearVelocity.sqrMagnitude;
-            _emitter.enabled = speedSqr > SPEED_THRESHOLD_SQR;
+            _emitter.enabled = ExhaustTrailEmission.ShouldEmit(_targetBody.linearVelocity.sqrMagnitude);
         }
 
         private void HandleWrap(GameObject obj)
@@ -65,13 +60,13 @@ namespace Course.Effect
             if (obj != _targetTransform.gameObject) return;
             _emitter.enabled = false;
             _ps.Clear(true);
-            _frameCounter = framesToSkip;
+            _emission.SuppressFor(framesToSkip);
         }
 
         private void OnEnable()
         {
             if (!_isInitialize) return;
-            _frameCounter = 0f;
+            _emission.SuppressFor(0f);
             _emitter.enabled = false;
             _offScreenWrapper.OnWrap += HandleWrap;
         }

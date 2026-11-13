@@ -7,19 +7,10 @@ namespace Course.Core
         private const float LocalEdge = 0.5f;
         private const float WrapEpsilon = 0.001f;
 
-        public static bool IsOutside(Vector3 localPosition)
-        {
-            float maxDistance = Mathf.Max(
-                Mathf.Abs(localPosition.x), Mathf.Abs(localPosition.y), Mathf.Abs(localPosition.z));
-            return maxDistance > LocalEdge;
-        }
-
-        public static int GetAxisSide(float coordinate)
-        {
-            if (coordinate > LocalEdge) return 1;
-            if (coordinate < -LocalEdge) return -1;
-            return 0;
-        }
+        public static bool IsOutside(Vector3 localPosition) =>
+            Mathf.Abs(localPosition.x) > LocalEdge ||
+            Mathf.Abs(localPosition.y) > LocalEdge ||
+            Mathf.Abs(localPosition.z) > LocalEdge;
 
         public static Vector3 Wrap(Vector3 localPosition)
         {
@@ -30,12 +21,9 @@ namespace Course.Core
 
         private static float WrapAxis(float coordinate)
         {
-            return GetAxisSide(coordinate) switch
-            {
-                1 => -LocalEdge + WrapEpsilon,
-                -1 => LocalEdge - WrapEpsilon,
-                _ => coordinate
-            };
+            if (coordinate > LocalEdge) return -LocalEdge + WrapEpsilon;
+            if (coordinate < -LocalEdge) return LocalEdge - WrapEpsilon;
+            return coordinate;
         }
     }
 }
