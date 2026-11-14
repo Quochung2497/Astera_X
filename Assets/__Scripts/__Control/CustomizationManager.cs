@@ -1,19 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Course.Attribute;
 using Course.Core;
 using Course.ScriptableObject;
-using Course.Services.Achievements;
 using Course.Services.SaveService;
 using UnityEngine;
-using Utility.DependencyInjection;
 
 namespace Course.Control
 {
     [DisallowMultipleComponent]
-    public class CustomizationManager : MonoBehaviour, ISavable , ICustomization
+    public class CustomizationManager : MonoBehaviour, ISavable, ICustomization
     {
         [Header("All available parts")]
         public ShipPartSO[] bodyParts;    // indexes 0..N
@@ -23,24 +19,19 @@ namespace Course.Control
         [SerializeField] private Transform bodyMount;
         [SerializeField] private Transform turretMount;
 
-        private Dictionary<int, ShipPartSO> _bodyByIndex;
-        private Dictionary<int, ShipPartSO> _turretByIndex;
+        private ShipPartSelection<ShipPartSO> _selection;
         private GameObject _currentBody;
         private GameObject _currentTurret;
-        public int SelectedBodyIndex  { get; private set; }
-        public int SelectedTurretIndex{ get; private set; }
+        public int SelectedBodyIndex => _selection.SelectedBodyIndex;
+        public int SelectedTurretIndex => _selection.SelectedTurretIndex;
         
         
         private void Awake()
         {
-            // build fast index → SO maps
-            _bodyByIndex = bodyParts
-                .Where(so => so.partType == PartType.Body)
-                .ToDictionary(so => so.Index, so => so);
-
-            _turretByIndex = turretParts
-                .Where(so => so.partType == PartType.Turret)
-                .ToDictionary(so => so.Index, so => so);
+            var catalog = bodyParts.Where(part => part.partType == PartType.Body)
+                .Concat(turretParts.Where(part => part.partType == PartType.Turret))
+                .ToDictionary(part => (part.partType, part.Index));
+            _selection = new ShipPartSelection<ShipPartSO>(catalog);
         }
 
         public event Action<PartType, Transform, ShipPartSO.StatModifier[]> OnApplyShipPart;
@@ -48,28 +39,17 @@ namespace Course.Control
         public event Action OnLoaded;
 
 
-        public void ApplyBody(int index)
-        {
-            if (!_bodyByIndex.TryGetValue(index, out var so)) return;
-            SwapPrefab(ref _currentBody, so.GetPrefab(), bodyMount);
-            SelectedBodyIndex = index;
-            Transform newBodyTransform = _currentBody != null
-                ? _currentBody.transform
-                : bodyMount;
-            OnApplyShipPart?.Invoke(PartType.Body, newBodyTransform, so.modifiers);
-            OnCustomizationChanged?.Invoke();
-        }
+        public void ApplyBody(int index) => ApplyPart(PartType.Body, index, ref _currentBody, bodyMount);
 
-        public void ApplyTurret(int index)
+        public void ApplyTurret(int index) => ApplyPart(PartType.Turret, index, ref _currentTurret, turretMount);
+
+        private void ApplyPart(PartType type, int index, ref GameObject current, Transform mount)
         {
-            if (!_turretByIndex.TryGetValue(index, out var so)) return;
-            
-            SwapPrefab(ref _currentTurret, so.GetPrefab(), turretMount, rotateAsTurret: true);
-            SelectedTurretIndex = index;
-            Transform newTurretTransform = _currentTurret != null
-                ? _currentTurret.transform
-                : turretMount;
-            OnApplyShipPart?.Invoke(PartType.Turret,newTurretTransform, so.modifiers);
+            if (!_selection.TryGetPart(type, index, out var part)) return;
+
+            SwapPrefab(ref current, part.GetPrefab(), mount, rotateAsTurret: type == PartType.Turret);
+            _selection.SetSelectedIndex(type, index);
+            OnApplyShipPart?.Invoke(type, current != null ? current.transform : mount, part.modifiers);
             OnCustomizationChanged?.Invoke();
         }
 
@@ -96,11 +76,9 @@ namespace Course.Control
             var defaultData = (ShipCustomizationData)(this as ISavable).GetDefault();
             var data = await svc.LoadData("Customization", defaultData, this);
             
-            // Apply loaded indices
-            SelectedBodyIndex   = data.selectedBody;
-            SelectedTurretIndex = data.selectedTurret;
-            ApplyBody(SelectedBodyIndex);
-            ApplyTurret(SelectedTurretIndex);
+            _selection.RestoreIndices(data.selectedBody, data.selectedTurret);
+            ApplyBody(data.selectedBody);
+            ApplyTurret(data.selectedTurret);
             OnLoaded?.Invoke();
         }
 

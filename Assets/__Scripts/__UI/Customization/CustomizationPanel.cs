@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Course.Control;
 using Course.Core;
 using Course.ScriptableObject;
 using Course.Services.Achievements;
 using Course.Services.Shop;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Utility.DependencyInjection;
 
@@ -26,7 +23,7 @@ namespace Course.UI.Customization
         [Inject] private IShopService _shop;
 
         private bool _hasLoaded = false;
-        private readonly HashSet<AchievementSO> _unlocked = new();
+        private readonly ShipPartAvailability _availability = new();
 
         private void Awake()
         {
@@ -49,6 +46,7 @@ namespace Course.UI.Customization
                 return;
             _achievements.OnUnlocked += OnAchievementUnlocked;
             _customization.OnLoaded += OnCustomizationLoaded;
+            _shop.OnShopLoaded += OnShopLoaded;
 
         }
 
@@ -58,60 +56,57 @@ namespace Course.UI.Customization
                 return;
             _achievements.OnUnlocked -= OnAchievementUnlocked;
             _customization.OnLoaded -= OnCustomizationLoaded;
-            if (_shop == null) return;
-            _shop.OnPartPurchased   -= HandlePartPurchased;
+            _shop.OnShopLoaded -= OnShopLoaded;
+            if (_hasLoaded)
+                _shop.OnPartPurchased -= HandlePartPurchased;
         }
 
         private void OnCustomizationLoaded()
         {
+            if (!_hasLoaded)
+                _shop.OnPartPurchased += HandlePartPurchased;
+
             _hasLoaded = true;
-            _shop.OnPartPurchased += HandlePartPurchased;
-            InitializeUI();
+            OnShopLoaded();
         }
 
         private void OnAchievementUnlocked(AchievementSO def)
         {
-            _unlocked.Add(def);
-            if (!_hasLoaded) return;
-            InitializeUI();
+            _availability.UnlockAchievement(def.GetInstanceID());
+            if (_hasLoaded)
+                RefreshToggles();
         }
 
-        private void InitializeUI()
+        private void OnShopLoaded()
         {
-            // 1) Enable/disable each toggle
-            foreach (var tp in bodyToggles.Concat(turretToggles))
+            foreach (var part in _shop.PurchasedParts)
+                _availability.RecordPurchase(part.partType, part.Index);
+
+            if (_hasLoaded)
+                RefreshToggles();
+        }
+
+        private void RefreshToggles()
+        {
+            RefreshToggles(bodyToggles, _customization.SelectedBodyIndex);
+            RefreshToggles(turretToggles, _customization.SelectedTurretIndex);
+        }
+
+        private void RefreshToggles(TogglePart[] toggles, int selectedIndex)
+        {
+            foreach (var part in toggles)
             {
-                bool byAch  = tp.unlockRequirement == null
-                              || _unlocked.Contains(tp.unlockRequirement);
-
-                bool byShop = _shop.PurchasedParts
-                    .Any(p => p.partType == tp.partType
-                              && p.Index    == tp.index);
-
-                tp.toggle.interactable = byAch || byShop;
-            }
-
-            // 2) Set each toggle’s isOn to match the current selection
-            foreach (var tp in bodyToggles)
-            {
-                if (tp.toggle.interactable)
-                    tp.toggle.SetIsOnWithoutNotify(tp.index == _customization.SelectedBodyIndex);
-                else
-                    tp.toggle.SetIsOnWithoutNotify(false);
-            }
-
-            foreach (var tp in turretToggles)
-            {
-                if (tp.toggle.interactable)
-                    tp.toggle.SetIsOnWithoutNotify(tp.index == _customization.SelectedTurretIndex);
-                else
-                    tp.toggle.SetIsOnWithoutNotify(false);
+                int? requirement = part.unlockRequirement == null ? null : part.unlockRequirement.GetInstanceID();
+                bool canSelect = _availability.CanSelect(part.partType, part.index, requirement);
+                part.toggle.interactable = canSelect;
+                part.toggle.SetIsOnWithoutNotify(canSelect && part.index == selectedIndex);
             }
         }
-        
+
+
         private void HandlePartPurchased(ShipPartSO part)
         {
-            // enable the matching toggle
+            _availability.RecordPurchase(part.partType, part.Index);
             var toggles = part.partType == PartType.Body ? bodyToggles : turretToggles;
             foreach (var tp in toggles)
                 if (tp.index == part.Index)
