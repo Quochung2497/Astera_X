@@ -1,10 +1,10 @@
-using System;
 using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 using Course.Control;
 using Course.ScriptableObject;
 using Course.Services.Achievements;
+using Course.Services.Shop;
 using Course.Utility.Events;
 using UnityEngine;
 using Utility.DependencyInjection;
@@ -15,13 +15,14 @@ namespace Course.Services.SaveService
     {
         private ISaveService _service;
         private EventBinding<GameStateChangedEvent> _gameOverBinding;
-        private Action _onCustomizationLoaded;
         // private EventBinding<GameStateChangedEvent> _preLevelBinding;
         
         [Inject]
         private ICustomization _customizationManager;
         [Inject]
         private IAchievementManager _achievementManager;
+        [Inject]
+        private IShopService _shopService;
 
         #region ISaveManager Implementation
 
@@ -51,7 +52,7 @@ namespace Course.Services.SaveService
         #region Private Methods
 
         /// <summary>
-        /// Finds all ISavable components in the scene and invokes Load(...) on each.
+        /// Finds all ISavable components in the scene and invokes Save(...) on each.
         /// </summary>
         private IEnumerator Save()
         {
@@ -67,21 +68,6 @@ namespace Course.Services.SaveService
             }
         }
 
-        private IEnumerator Load()
-        {
-            // Let component Start methods finish wiring their gameplay listeners first.
-            yield return null;
-            var savables = FindObjectsOfType<MonoBehaviour>()
-                .OfType<ISavable>();
-            foreach (var s in savables)
-            {
-                var task = s.Load(_service);
-                yield return new WaitUntil(() => task.IsCompleted);
-                if (task.Exception != null)
-                    Debug.LogError($"Load failed on {s.GetType().Name}: {task.Exception}");
-            }
-        }
-
         #endregion
 
         #region Unity API
@@ -91,29 +77,39 @@ namespace Course.Services.SaveService
             _service = new SaveService();
         }
 
-        private void Start()
+        private IEnumerator Start()
         {
-            _onCustomizationLoaded = () => {
-                _customizationManager.OnCustomizationChanged += HandleSave;
-            };
-            _customizationManager.OnLoaded += _onCustomizationLoaded;
+            // Let component Start methods finish wiring their gameplay listeners first.
+            yield return null;
+            var savables = FindObjectsOfType<MonoBehaviour>()
+                .OfType<ISavable>();
+            foreach (var s in savables)
+            {
+                var task = s.Load(_service);
+                if (!task.IsCompleted)
+                    yield return new WaitUntil(() => task.IsCompleted);
+                if (task.Exception != null)
+                    Debug.LogError($"Load failed on {s.GetType().Name}: {task.Exception}");
+            }
+
+            // Restore replays OnUnlocked. Subscribe to autosave only after loading all data.
+            _customizationManager.OnCustomizationChanged += HandleSave;
             _achievementManager.OnUnlocked += HandleSaveOnUnlock;
             _achievementManager.OnHighScore += HandleHighScoreSave;
-            // TODO: Save successful shop purchases in a later refactor.
+            _shopService.OnShopUpdate += HandleSave;
             _gameOverBinding = new EventBinding<GameStateChangedEvent>(OnGameStateChanged);
             EventBus<GameStateChangedEvent>.Register(_gameOverBinding);
-            StartCoroutine(Load());
         }
 
         private void OnDestroy()
         {
             EventBus<GameStateChangedEvent>.Deregister(_gameOverBinding);
 
+            if (_shopService != null)
+                _shopService.OnShopUpdate -= HandleSave;
+
             if (_customizationManager != null)
-            {
                 _customizationManager.OnCustomizationChanged -= HandleSave;
-                _customizationManager.OnLoaded -= _onCustomizationLoaded;
-            }
 
             if (_achievementManager != null)
             {

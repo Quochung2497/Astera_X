@@ -97,8 +97,8 @@ namespace Course.UI.Shop
 
             int available     = _shop.GetAvailableStock(_item);
             bool isSoldOut    = _shop.IsSoldOut(_item);
-            bool canMinus     = _quantity > 1;
-            bool canPlus      = available == int.MaxValue || _quantity < available;
+            bool canMinus     = !isSoldOut && _quantity > 1;
+            bool canPlus      = !isSoldOut && (available == int.MaxValue || _quantity < available);
 
             minusButton.interactable = canMinus;
             plusButton.interactable  = canPlus;
@@ -108,14 +108,17 @@ namespace Course.UI.Shop
 
         public void OnPlusClicked()
         {
+            if (!plusButton.interactable) return;
+
             _quantity++;
             RefreshAll();
         }
 
         public void OnMinusClicked()
         {
-            if (_quantity > 1)
-                _quantity--;
+            if (!minusButton.interactable) return;
+
+            _quantity--;
             RefreshAll();
         }
 
@@ -124,6 +127,7 @@ namespace Course.UI.Shop
             if (_item == null || _shop == null) return;
 
             bool success = _shop.Buy(_item, _quantity);
+            RefreshButtons();
             if (success)
             {
                 StartCoroutine( ShowSpinner());
